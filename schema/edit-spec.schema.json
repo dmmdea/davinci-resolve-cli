@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dmmdea/davinci-resolve-cli/schema/edit-spec-1.0.0.json",
+  "title": "Resolve bridge edit spec",
+  "description": "The declarative contract between tools that assemble an edit and the Resolve bridge (`build` consumes it, `export-spec` produces it). Bespoke JSON modeled on OpenTimelineIO vocabulary; NOT raw OTIO. Time is INTEGER FRAMES at the spec's `rate` - never float seconds. Every edit must be pre-resolved into append-time geometry: the Resolve API cannot trim/move/razor/retime a placed clip (no post-placement edits). Validate it before `build` and after `export-spec`.",
+  "type": "object",
+  "required": ["schema_version", "format", "rate", "resolution", "tracks"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^1\\.0\\.0$" },
+    "format": {
+      "type": "string",
+      "description": "Assembler format that produced/consumes this spec, or 'export' for a bridge-read serialization.",
+      "examples": ["invitation-reel", "short-clip", "partner-ad", "short-review", "export"]
+    },
+    "rate": { "type": ["integer", "null"], "minimum": 1, "description": "Timeline frame rate (conventional integer: 23.976->24, 29.97->30). All frame numbers in this document are at this rate. null is legal ONLY in format:'export' documents when the setting was unreadable (see generator.warnings); build-time specs MUST carry an integer." },
+    "resolution": {
+      "type": "array", "prefixItems": [{ "type": ["integer", "null"] }, { "type": ["integer", "null"] }],
+      "minItems": 2, "maxItems": 2, "description": "[width, height]"
+    },
+    "timeline": { "type": "string", "description": "Timeline name (export) / target timeline name (build)." },
+    "start_frame": { "type": "integer", "description": "Timeline start timecode as frames (Resolve timelines commonly start at 108000 = 01:00:00:00 @30fps)." },
+    "end_frame": { "type": "integer" },
+    "tracks": {
+      "type": "object",
+      "description": "Track role -> ordered clip entries. Roles are V1..Vn (video, bottom-up) and A1..An (audio).",
+      "patternProperties": {
+        "^[VA][0-9]+$": { "type": "array", "items": { "$ref": "#/$defs/clip" } }
+      },
+      "additionalProperties": false
+    },
+    "overlays": {
+      "type": "object",
+      "description": "Typed section for treatments OTIO has no home for (captions, grade, sound design plans).",
+      "properties": {
+        "captions": {
+          "type": "object",
+          "properties": {
+            "style": { "type": "string", "examples": ["karaoke"] },
+            "from": { "type": "string", "description": "Source field for timing, e.g. 'vo_words' (the words array)." }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "audio_master": {
+      "type": "object",
+      "description": "Loudness target for delivery (two-pass loudnorm).",
+      "properties": {
+        "I": { "type": "number", "description": "Integrated LUFS, e.g. -14" },
+        "TP": { "type": "number", "description": "True peak dBTP, e.g. -1.0" },
+        "LRA": { "type": "number", "description": "Loudness range, e.g. 11" }
+      },
+      "required": ["I", "TP"],
+      "additionalProperties": false
+    },
+    "words": {
+      "type": "array",
+      "description": "Frame-quantized word timings (WhisperX es), feeding kinetic-captions and title sync.",
+      "items": {
+        "type": "object",
+        "required": ["word", "start", "end"],
+        "properties": {
+          "word": { "type": "string" },
+          "start": { "type": "integer", "description": "frame" },
+          "end": { "type": "integer", "description": "frame" },
+          "conf": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "markers": { "type": "object", "description": "Timeline markers keyed by frame (export passthrough of Resolve GetMarkers())." },
+    "generator": { "type": "object", "description": "Provenance of this document (tool, cli build, project)." }
+  },
+  "$defs": {
+    "clip": {
+      "type": "object",
+      "required": ["id"],
+      "description": "One placed item. Build-time entries carry src+in/out+record geometry; overlay entries carry overlay/template fields; export entries may omit build-only fields.",
+      "properties": {
+        "id": { "type": "string", "description": "Stable clip id, unique within the spec." },
+        "name": { "type": "string", "description": "Display name (export)." },
+        "src": { "type": "string", "description": "Media path (or media pool clip name for generated items)." },
+        "in": { "type": "integer", "description": "Source in point, frames." },
+        "out": { "type": "integer", "description": "Source out point, frames (exclusive)." },
+        "record": { "type": "integer", "description": "Timeline placement frame." },
+        "end": { "type": "integer", "description": "Timeline end frame (export convenience)." },
+        "duration": { "type": "integer", "description": "Frames (export convenience; dur is the build-time field)." },
+        "dur": { "type": "integer", "description": "Duration in frames (build-time overlay entries)." },
+        "fill": { "type": "number", "description": "Scale-to-fill factor, e.g. 1.03." },
+        "motion": { "type": "string", "description": "Motion template ref, e.g. 'push:1.0->1.07'." },
+        "grade": { "type": "string", "description": "Grade/LUT ref, e.g. 'cinematic-10'." },
+        "overlay": { "type": "string", "description": "Overlay kind for V2+ items, e.g. 'title'." },
+        "template": { "type": "string", "description": "Published Fusion .setting template name, e.g. 'name-card'." },
+        "text": { "type": "string", "description": "Text content for title templates." }
+      },
+      "additionalProperties": false
+    }
+  }
+}

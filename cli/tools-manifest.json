@@ -1,0 +1,5514 @@
+{
+  "api_name": "davinci-resolve",
+  "base_url": "http://127.0.0.1:18800",
+  "description": "Every documented DaVinci Resolve scripting operation, plus the cross-project history and doctor diagnostics that Resolve itself — and every other Resolve CLI or MCP server — throws away.",
+  "mcp_ready": "full",
+  "http_transport": "standard",
+  "mcp": {
+    "endpoint_tools": "hidden",
+    "orchestration": "code"
+  },
+  "auth": {
+    "type": "none"
+  },
+  "required_headers": [],
+  "tools": [
+    {
+      "name": "audio_insert",
+      "description": "InsertAudioToCurrentTrackAtPlayhead (Fairlight page). Required: path, duration. Optional: offset, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/insert-audio",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "path",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "int",
+          "location": "body",
+          "description": "start offset in samples"
+        },
+        {
+          "name": "duration",
+          "type": "int",
+          "location": "body",
+          "description": "duration in samples",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "audio_tts",
+      "description": "GenerateSpeech text-to-speech (needs the AI Speech Generator Extras pack; returns an error without it): --text --voice 'Female 1'|'Male 1'|'Custom Voice'. Required: text. Optional: voice, voice-file, speed (plus 8 more).",
+      "method": "POST",
+      "path": "/v1/tts",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "text",
+          "type": "string",
+          "location": "body",
+          "description": "text",
+          "required": true
+        },
+        {
+          "name": "voice",
+          "type": "string",
+          "location": "body",
+          "description": "voice"
+        },
+        {
+          "name": "voice-file",
+          "type": "string",
+          "location": "body",
+          "description": "voice file"
+        },
+        {
+          "name": "speed",
+          "type": "float",
+          "location": "body",
+          "description": "speed"
+        },
+        {
+          "name": "pitch",
+          "type": "float",
+          "location": "body",
+          "description": "pitch"
+        },
+        {
+          "name": "variation",
+          "type": "float",
+          "location": "body",
+          "description": "variation"
+        },
+        {
+          "name": "generation-id",
+          "type": "int",
+          "location": "body",
+          "description": "generation id"
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "location": "body",
+          "description": "filename"
+        },
+        {
+          "name": "add-to-timeline",
+          "type": "bool",
+          "location": "body",
+          "description": "add to timeline"
+        },
+        {
+          "name": "track",
+          "type": "string",
+          "location": "body",
+          "description": "AudioTrack number (0 = new track)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_add-marker",
+      "description": "add a marker to a media pool clip. Required: frame. Optional: clip, color (default: Blue), name (plus 6 more).",
+      "method": "POST",
+      "path": "/v1/add-clip-marker",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "frame",
+          "type": "int",
+          "location": "body",
+          "description": "frame",
+          "required": true
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "location": "body",
+          "description": "color"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "location": "body",
+          "description": "note"
+        },
+        {
+          "name": "duration",
+          "type": "int",
+          "location": "body",
+          "description": "duration"
+        },
+        {
+          "name": "custom-data",
+          "type": "string",
+          "location": "body",
+          "description": "stored in the marker's customData (JSON encoded) (JSON value as a string)"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_ai",
+      "description": "AI pass on a clip or bin: transcribe / clear-transcription / classify-audio / clear-classification / deblur / intellisearch / slate. Required: op. Optional: clip, folder, speaker-detection (plus 7 more).",
+      "method": "POST",
+      "path": "/v1/clip-ai",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "op",
+          "type": "string",
+          "location": "body",
+          "description": "op",
+          "required": true
+        },
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "location": "body",
+          "description": "bin path: run on the whole bin instead of --clip"
+        },
+        {
+          "name": "speaker-detection",
+          "type": "bool",
+          "location": "body",
+          "description": "speaker detection"
+        },
+        {
+          "name": "faces",
+          "type": "bool",
+          "location": "body",
+          "description": "faces"
+        },
+        {
+          "name": "better",
+          "type": "bool",
+          "location": "body",
+          "description": "better"
+        },
+        {
+          "name": "marker-color",
+          "type": "string",
+          "location": "body",
+          "description": "marker color"
+        },
+        {
+          "name": "options",
+          "type": "string",
+          "location": "body",
+          "description": "DeblurOptions JSON (JSON value as a string)"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_color",
+      "description": "set the clip color, or 'clear'. Required: color. Optional: clip, bin, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/clip-color",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "location": "body",
+          "description": "color",
+          "required": true
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_delete-marker",
+      "description": "delete clip markers by --frame, --custom-data or --color/All. Optional: clip, frame, custom-data (plus 4 more).",
+      "method": "POST",
+      "path": "/v1/delete-clip-marker",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "frame",
+          "type": "int",
+          "location": "body",
+          "description": "frame"
+        },
+        {
+          "name": "custom-data",
+          "type": "string",
+          "location": "body",
+          "description": "custom data (JSON value as a string)"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "location": "body",
+          "description": "color"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_flag",
+      "description": "add a flag (--add COLOR) or clear flags (--remove COLOR|All). Optional: clip, add, remove (plus 3 more).",
+      "method": "POST",
+      "path": "/v1/clip-flag",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "add",
+          "type": "string",
+          "location": "body",
+          "description": "add"
+        },
+        {
+          "name": "remove",
+          "type": "string",
+          "location": "body",
+          "description": "remove"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_info",
+      "description": "every clip property + metadata, flags, color, marks, markers, audio mapping. Optional: clip, bin.",
+      "method": "GET",
+      "path": "/v1/clip-info",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "query",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "query",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        }
+      ]
+    },
+    {
+      "name": "clip_mark",
+      "description": "set (--mark-in/--mark-out) or --clear clip mark in/out. Optional: clip, mark-in, mark-out (plus 5 more).",
+      "method": "POST",
+      "path": "/v1/clip-mark",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "mark-in",
+          "type": "int",
+          "location": "body",
+          "description": "mark in"
+        },
+        {
+          "name": "mark-out",
+          "type": "int",
+          "location": "body",
+          "description": "mark out"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "body",
+          "description": "type"
+        },
+        {
+          "name": "clear",
+          "type": "bool",
+          "location": "body",
+          "description": "clear"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_markers",
+      "description": "markers on a media pool clip (customData decoded). Optional: clip, bin.",
+      "method": "GET",
+      "path": "/v1/clip-markers",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "query",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "query",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        }
+      ]
+    },
+    {
+      "name": "clip_monitor-growing",
+      "description": "MonitorGrowingFile on a clip. Optional: clip, bin, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/monitor-growing",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_proxy",
+      "description": "link a proxy (--link PATH), full-res media (--full-res PATH) or --unlink. Optional: clip, link, full-res (plus 4 more).",
+      "method": "POST",
+      "path": "/v1/proxy",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "link",
+          "type": "string",
+          "location": "body",
+          "description": "link"
+        },
+        {
+          "name": "full-res",
+          "type": "string",
+          "location": "body",
+          "description": "full res"
+        },
+        {
+          "name": "unlink",
+          "type": "bool",
+          "location": "body",
+          "description": "unlink"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_rename",
+      "description": "rename a media pool clip. Required: name. Optional: clip, bin, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/rename-clip",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name",
+          "required": true
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_replace",
+      "description": "ReplaceClip / --preserve-subclip. Required: path. Optional: clip, preserve-subclip, bin (plus 2 more).",
+      "method": "POST",
+      "path": "/v1/replace-clip",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "path",
+          "required": true
+        },
+        {
+          "name": "preserve-subclip",
+          "type": "bool",
+          "location": "body",
+          "description": "preserve subclip"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_set-audio-mapping",
+      "description": "21-1 SetAudioMapping from JSON (track_mapping). Required: mapping. Optional: clip, bin, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/set-audio-mapping",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "mapping",
+          "type": "string",
+          "location": "body",
+          "description": "mapping (JSON value as a string)",
+          "required": true
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_set-metadata",
+      "description": "SetMetadata / --third-party SetThirdPartyMetadata from JSON. Required: metadata. Optional: clip, third-party, bin (plus 2 more).",
+      "method": "POST",
+      "path": "/v1/set-clip-metadata",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "metadata",
+          "type": "string",
+          "location": "body",
+          "description": "metadata (JSON value as a string)",
+          "required": true
+        },
+        {
+          "name": "third-party",
+          "type": "bool",
+          "location": "body",
+          "description": "third party"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_set-property",
+      "description": "SetClipProperty (FPS, Alpha mode, Super Scale, ) with readback. Required: key, value. Optional: clip, sharpness, noise-reduction (plus 3 more).",
+      "method": "POST",
+      "path": "/v1/set-clip-property",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "location": "body",
+          "description": "key",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "location": "body",
+          "description": "value",
+          "required": true
+        },
+        {
+          "name": "sharpness",
+          "type": "float",
+          "location": "body",
+          "description": "Super Scale 2x Enhanced sharpness 0..1"
+        },
+        {
+          "name": "noise-reduction",
+          "type": "float",
+          "location": "body",
+          "description": "Super Scale 2x Enhanced NR 0..1"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "clip_transcription",
+      "description": "21-1 transcript readback (segments, speakers, word timing). Optional: clip, nested, bin.",
+      "method": "GET",
+      "path": "/v1/transcription",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "query",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "nested",
+          "type": "bool",
+          "location": "query",
+          "description": "useNestedClipTranscription"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "query",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        }
+      ]
+    },
+    {
+      "name": "color_apply-cdl",
+      "description": "SetCDL on a node: --slope 'r g b' --offset 'r g b' --power 'r g b' --saturation s. Required: items. Optional: node, slope, offset (plus 5 more).",
+      "method": "POST",
+      "path": "/v1/apply-cdl",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item refs (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "node",
+          "type": "int",
+          "location": "body",
+          "description": "node"
+        },
+        {
+          "name": "slope",
+          "type": "string",
+          "location": "body",
+          "description": "slope"
+        },
+        {
+          "name": "offset",
+          "type": "string",
+          "location": "body",
+          "description": "offset"
+        },
+        {
+          "name": "power",
+          "type": "string",
+          "location": "body",
+          "description": "power"
+        },
+        {
+          "name": "saturation",
+          "type": "float",
+          "location": "body",
+          "description": "saturation"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "color_apply-drx",
+      "description": "ApplyGradeFromDRX (REPLACES the node graph); --mode none|source|start. Required: items, path. Optional: mode, timeline, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/apply-drx",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item refs (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "path",
+          "required": true
+        },
+        {
+          "name": "mode",
+          "type": "string",
+          "location": "body",
+          "description": "mode"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "color_apply-lut",
+      "description": "Graph.SetLUT on a node of each item (LUT must be discovered: refresh-luts). Required: items, lut. Optional: node, timeline, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/apply-lut",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item refs (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "lut",
+          "type": "string",
+          "location": "body",
+          "description": "path under the LUT folder, or absolute",
+          "required": true
+        },
+        {
+          "name": "node",
+          "type": "int",
+          "location": "body",
+          "description": "node"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "color_copy-grade",
+      "description": "CopyGrades from --source item to items. Required: items, source. Optional: timeline, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/copy-grade",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item refs (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "location": "body",
+          "description": "source item ref",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "color_export-lut",
+      "description": "ExportLUT of an item's grade (--cube 17|33|65|vlut). Required: path. Optional: item, cube, timeline (plus 2 more).",
+      "method": "POST",
+      "path": "/v1/export-lut",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3', unique id, or name"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "path",
+          "required": true
+        },
+        {
+          "name": "cube",
+          "type": "string",
+          "location": "body",
+          "description": "cube"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "color_gallery",
+      "description": "gallery still and PowerGrade albums with still counts.",
+      "method": "GET",
+      "path": "/v1/gallery",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "color_gallery-album",
+      "description": "create / create-powergrade / set-current / rename / import (--paths) / export (--path --prefix --format) / delete-stills. Required: action. Optional: name, new-name, paths (plus 5 more).",
+      "method": "POST",
+      "path": "/v1/gallery-album",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "new-name",
+          "type": "string",
+          "location": "body",
+          "description": "new name"
+        },
+        {
+          "name": "paths",
+          "type": "string",
+          "location": "body",
+          "description": "still files to import (comma-free single value or a JSON array string)"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "export folder"
+        },
+        {
+          "name": "prefix",
+          "type": "string",
+          "location": "body",
+          "description": "prefix"
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "location": "body",
+          "description": "format"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "color_group",
+      "description": "create / delete / rename / assign / remove a color group. Required: action, name. Optional: new-name, items, timeline (plus 2 more).",
+      "method": "POST",
+      "path": "/v1/color-group",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name",
+          "required": true
+        },
+        {
+          "name": "new-name",
+          "type": "string",
+          "location": "body",
+          "description": "new name"
+        },
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "item refs (assign/remove) (comma-free single value or a JSON array string)"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "color_groups",
+      "description": "color groups with their clips (current timeline) and node counts.",
+      "method": "GET",
+      "path": "/v1/color-groups",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "color_info",
+      "description": "grade versions, group and node graph (labels, LUT per node, tools) of an item -- no lift/gamma/gain readback exists. Optional: item, timeline.",
+      "method": "GET",
+      "path": "/v1/color-info",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "query",
+          "description": "timeline item: 'V1:3', unique id, or name"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "color_refresh-luts",
+      "description": "RefreshLUTList after copying a .cube into the LUT folder. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/refresh-luts",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "color_set-node",
+      "description": "node enable/cache, ResetAllGrades, ResetAllNodeColors, ApplyArriCdlLut. Optional: item, node, enabled (plus 7 more).",
+      "method": "POST",
+      "path": "/v1/set-node",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3', unique id, or name"
+        },
+        {
+          "name": "node",
+          "type": "int",
+          "location": "body",
+          "description": "node"
+        },
+        {
+          "name": "enabled",
+          "type": "string",
+          "location": "body",
+          "description": "enabled"
+        },
+        {
+          "name": "cache",
+          "type": "string",
+          "location": "body",
+          "description": "cache"
+        },
+        {
+          "name": "reset-all",
+          "type": "bool",
+          "location": "body",
+          "description": "reset all"
+        },
+        {
+          "name": "reset-colors",
+          "type": "bool",
+          "location": "body",
+          "description": "reset colors"
+        },
+        {
+          "name": "arri-cdl",
+          "type": "bool",
+          "location": "body",
+          "description": "arri cdl"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "color_timeline-graph",
+      "description": "timeline-level node graph. Optional: timeline.",
+      "method": "GET",
+      "path": "/v1/timeline-graph",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "color_version",
+      "description": "add / delete / load / rename a grade version (local or remote). Required: action, name. Optional: item, new-name, type (plus 3 more).",
+      "method": "POST",
+      "path": "/v1/color-version",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name",
+          "required": true
+        },
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3', unique id, or name"
+        },
+        {
+          "name": "new-name",
+          "type": "string",
+          "location": "body",
+          "description": "new name"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "body",
+          "description": "type"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "fusion_keyframes",
+      "description": "BezierSpline keyframes on one input (--keys {frame: value}) or --clear. Required: tool, input, keys. Optional: item, comp, clear (plus 3 more).",
+      "method": "POST",
+      "path": "/v1/fusion-keyframes",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3', unique id, or name"
+        },
+        {
+          "name": "comp",
+          "type": "int",
+          "location": "body",
+          "description": "Fusion comp index on the item (default 1)"
+        },
+        {
+          "name": "tool",
+          "type": "string",
+          "location": "body",
+          "description": "tool",
+          "required": true
+        },
+        {
+          "name": "input",
+          "type": "string",
+          "location": "body",
+          "description": "input",
+          "required": true
+        },
+        {
+          "name": "keys",
+          "type": "string",
+          "location": "body",
+          "description": "keys (JSON value as a string)",
+          "required": true
+        },
+        {
+          "name": "clear",
+          "type": "bool",
+          "location": "body",
+          "description": "clear"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "fusion_set",
+      "description": "SetInput values on a tool (Lock/StartUndo wrapped) with readback. Required: tool, inputs. Optional: item, comp, time (plus 3 more).",
+      "method": "POST",
+      "path": "/v1/fusion-set",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3', unique id, or name"
+        },
+        {
+          "name": "comp",
+          "type": "int",
+          "location": "body",
+          "description": "Fusion comp index on the item (default 1)"
+        },
+        {
+          "name": "tool",
+          "type": "string",
+          "location": "body",
+          "description": "tool name or RegID",
+          "required": true
+        },
+        {
+          "name": "inputs",
+          "type": "string",
+          "location": "body",
+          "description": "{'StyledText': '...', 'Size': 0.1, 'Center': [0.5, 0.7]} (JSON value as a string)",
+          "required": true
+        },
+        {
+          "name": "time",
+          "type": "int",
+          "location": "body",
+          "description": "comp-local frame for an animated input"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "fusion_set-title",
+      "description": "Text+ shortcut: --text --font --style --size --color r,g,b --center x,y --outline w. Optional: item, comp, text (plus 12 more).",
+      "method": "POST",
+      "path": "/v1/set-title",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3', unique id, or name"
+        },
+        {
+          "name": "comp",
+          "type": "int",
+          "location": "body",
+          "description": "Fusion comp index on the item (default 1)"
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "location": "body",
+          "description": "text"
+        },
+        {
+          "name": "font",
+          "type": "string",
+          "location": "body",
+          "description": "font"
+        },
+        {
+          "name": "style",
+          "type": "string",
+          "location": "body",
+          "description": "style"
+        },
+        {
+          "name": "size",
+          "type": "float",
+          "location": "body",
+          "description": "size"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "location": "body",
+          "description": "color"
+        },
+        {
+          "name": "center",
+          "type": "string",
+          "location": "body",
+          "description": "center"
+        },
+        {
+          "name": "h-justify",
+          "type": "int",
+          "location": "body",
+          "description": "h justify"
+        },
+        {
+          "name": "v-justify",
+          "type": "int",
+          "location": "body",
+          "description": "v justify"
+        },
+        {
+          "name": "outline",
+          "type": "float",
+          "location": "body",
+          "description": "outline"
+        },
+        {
+          "name": "inputs",
+          "type": "string",
+          "location": "body",
+          "description": "extra input id -\u003e value (JSON value as a string)"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "fusion_tool",
+      "description": "add / delete / bypass / unbypass a tool in the comp. Required: action. Optional: item, comp, tool (plus 9 more).",
+      "method": "POST",
+      "path": "/v1/fusion-tool",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3', unique id, or name"
+        },
+        {
+          "name": "comp",
+          "type": "int",
+          "location": "body",
+          "description": "Fusion comp index on the item (default 1)"
+        },
+        {
+          "name": "tool",
+          "type": "string",
+          "location": "body",
+          "description": "existing tool (delete/bypass)"
+        },
+        {
+          "name": "regid",
+          "type": "string",
+          "location": "body",
+          "description": "RegID to add"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "TOOLS_Name for the new tool"
+        },
+        {
+          "name": "connect-from",
+          "type": "string",
+          "location": "body",
+          "description": "tool feeding the new tool"
+        },
+        {
+          "name": "input",
+          "type": "string",
+          "location": "body",
+          "description": "input id on the new tool (default Input)"
+        },
+        {
+          "name": "connect-to",
+          "type": "string",
+          "location": "body",
+          "description": "tool the new tool feeds"
+        },
+        {
+          "name": "to-input",
+          "type": "string",
+          "location": "body",
+          "description": "input id on --connect-to (default Input)"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "fusion_tools",
+      "description": "tools in an item's Fusion comp (+ input values with --inputs / --all-inputs). Optional: item, comp, regid (plus 3 more).",
+      "method": "GET",
+      "path": "/v1/fusion-tools",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "query",
+          "description": "timeline item: 'V1:3', unique id, or name"
+        },
+        {
+          "name": "comp",
+          "type": "int",
+          "location": "query",
+          "description": "Fusion comp index on the item (default 1)"
+        },
+        {
+          "name": "regid",
+          "type": "string",
+          "location": "query",
+          "description": "filter by RegID, e.g. TextPlus"
+        },
+        {
+          "name": "read-inputs",
+          "type": "string",
+          "location": "query",
+          "description": "input ids to read on each tool (comma-free single value or a JSON array string)"
+        },
+        {
+          "name": "all-inputs",
+          "type": "bool",
+          "location": "query",
+          "description": "all inputs"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "item_add-transition",
+      "description": "21-1 AddTransition on an item edge (consumes media handles: 'right' needs the outgoing clip's tail handle, 'left'/'center' also the incoming clip's head handle; give position + alignment + duration). Optional: item, type, category (plus 6 more).",
+      "method": "POST",
+      "path": "/v1/add-transition",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3' (track:position), unique id, or name"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "body",
+          "description": "e.g. 'Cross Dissolve' (default), 'Dip To Color Dissolve'"
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "location": "body",
+          "description": "category"
+        },
+        {
+          "name": "position",
+          "type": "string",
+          "location": "body",
+          "description": "position"
+        },
+        {
+          "name": "alignment",
+          "type": "string",
+          "location": "body",
+          "description": "alignment"
+        },
+        {
+          "name": "duration",
+          "type": "int",
+          "location": "body",
+          "description": "frames"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "item_delete",
+      "description": "DeleteClips on items (--ripple closes the gap). Required: items. Optional: ripple, timeline, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/delete-items",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "items (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "ripple",
+          "type": "bool",
+          "location": "body",
+          "description": "ripple"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "item_fusion-comp",
+      "description": "Fusion comps on an item: add / import / export / delete / load / rename. Required: action. Optional: item, name, new-name (plus 5 more).",
+      "method": "POST",
+      "path": "/v1/item-fusion",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3' (track:position), unique id, or name"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "new-name",
+          "type": "string",
+          "location": "body",
+          "description": "new name"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "path"
+        },
+        {
+          "name": "index",
+          "type": "int",
+          "location": "body",
+          "description": "comp index for export (1)"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "item_fusion-comps",
+      "description": "Fusion comps on an item (count + names). Optional: item, timeline.",
+      "method": "GET",
+      "path": "/v1/fusion-comps",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "query",
+          "description": "timeline item: 'V1:3' (track:position), unique id, or name"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "item_info",
+      "description": "one item: properties, speed, fades, blanking, markers, comps, version, caches. Optional: item, timeline.",
+      "method": "GET",
+      "path": "/v1/item-info",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "query",
+          "description": "timeline item: 'V1:3' (track:position), unique id, or name"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "item_link",
+      "description": "SetClipsLinked (or --unlink). Required: items. Optional: unlink, timeline, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/link-items",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "items (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "unlink",
+          "type": "bool",
+          "location": "body",
+          "description": "unlink"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "item_list",
+      "description": "every timeline item with ref (V1:3), type, geometry, source range, clip. Optional: type, timeline.",
+      "method": "GET",
+      "path": "/v1/items",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "type",
+          "type": "string",
+          "location": "query",
+          "description": "type"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "item_multicam",
+      "description": "21-1 multicam: create (from clips) / flatten / smart-switch (on an item). Required: action. Optional: clips, name, sync (plus 9 more).",
+      "method": "POST",
+      "path": "/v1/multicam",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "clips",
+          "type": "string",
+          "location": "body",
+          "description": "pool clip refs (create) (comma-free single value or a JSON array string)"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "multicam clip name (create)"
+        },
+        {
+          "name": "sync",
+          "type": "string",
+          "location": "body",
+          "description": "sync"
+        },
+        {
+          "name": "source-bin",
+          "type": "bool",
+          "location": "body",
+          "description": "createBinForSourceClips (default OFF: a moved-source multicam cannot be appended until another is created)"
+        },
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3' (track:position), unique id, or name"
+        },
+        {
+          "name": "grade",
+          "type": "string",
+          "location": "body",
+          "description": "flatten grade source"
+        },
+        {
+          "name": "analysis",
+          "type": "string",
+          "location": "body",
+          "description": "smart-switch analysisMode (default audio)"
+        },
+        {
+          "name": "options",
+          "type": "string",
+          "location": "body",
+          "description": "MulticamOptions / SmartSwitchSettings JSON (JSON value as a string)"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope clip lookups to this bin path"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "item_set",
+      "description": "per-item edits: name, enabled, color, flags, speed (21-1), fades (21-1), blanking, caches, audio mapping, voice isolation. Optional: item, name, enabled (plus 16 more).",
+      "method": "POST",
+      "path": "/v1/set-item",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3' (track:position), unique id, or name"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "enabled",
+          "type": "string",
+          "location": "body",
+          "description": "enabled"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "location": "body",
+          "description": "color"
+        },
+        {
+          "name": "add-flag",
+          "type": "string",
+          "location": "body",
+          "description": "add flag"
+        },
+        {
+          "name": "remove-flag",
+          "type": "string",
+          "location": "body",
+          "description": "remove flag"
+        },
+        {
+          "name": "speed",
+          "type": "string",
+          "location": "body",
+          "description": "percentage number, or {'Percentage':50,'RippleTimeline':true,...} (JSON value as a string)"
+        },
+        {
+          "name": "fade-in",
+          "type": "int",
+          "location": "body",
+          "description": "frames"
+        },
+        {
+          "name": "fade-out",
+          "type": "int",
+          "location": "body",
+          "description": "frames"
+        },
+        {
+          "name": "blanking",
+          "type": "string",
+          "location": "body",
+          "description": "{'Top':0,'Bottom':0,'Left':0,'Right':0} (JSON value as a string)"
+        },
+        {
+          "name": "use-timeline-blanking",
+          "type": "string",
+          "location": "body",
+          "description": "use timeline blanking"
+        },
+        {
+          "name": "color-cache",
+          "type": "string",
+          "location": "body",
+          "description": "color cache"
+        },
+        {
+          "name": "fusion-cache",
+          "type": "string",
+          "location": "body",
+          "description": "CACHE_AUTO_ENABLED|CACHE_DISABLED|CACHE_ENABLED value"
+        },
+        {
+          "name": "audio-mapping",
+          "type": "string",
+          "location": "body",
+          "description": "SetSourceAudioChannelMapping JSON (exactly 1 track) (JSON value as a string)"
+        },
+        {
+          "name": "voice-isolation",
+          "type": "string",
+          "location": "body",
+          "description": "voice isolation"
+        },
+        {
+          "name": "voice-isolation-amount",
+          "type": "int",
+          "location": "body",
+          "description": "voice isolation amount"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "item_set-properties",
+      "description": "TimelineItemProperties (Pan/Tilt/Zoom/Crop/Opacity/CompositeMode/audio) -- STATIC values, no keyframes. Required: properties. Optional: item, timeline, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/set-item-properties",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3' (track:position), unique id, or name"
+        },
+        {
+          "name": "properties",
+          "type": "string",
+          "location": "body",
+          "description": "properties (JSON value as a string)",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "pool_bin",
+      "description": "create (idempotent) / delete / set-current / move / refresh a bin. Required: action. Optional: path, to, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/bin",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "bin path A/B"
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "location": "body",
+          "description": "target bin path (move)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "pool_bins",
+      "description": "media pool bin tree with clip counts. Optional: bin.",
+      "method": "GET",
+      "path": "/v1/bins",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "query",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        }
+      ]
+    },
+    {
+      "name": "pool_clips",
+      "description": "media pool clips. Optional: recursive.",
+      "method": "GET",
+      "path": "/v1/pool",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "recursive",
+          "type": "bool",
+          "location": "query",
+          "description": "walk all media pool folders"
+        }
+      ]
+    },
+    {
+      "name": "pool_delete-clips",
+      "description": "delete media pool clips (--all-matches: every duplicate of a name/path). Required: clips. Optional: all-matches, bin, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/delete-clips",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clips",
+          "type": "string",
+          "location": "body",
+          "description": "clip refs (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "all-matches",
+          "type": "bool",
+          "location": "body",
+          "description": "all matches"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "pool_import",
+      "description": "import media into a bin, skipping paths already in the pool (idempotent). Required: paths. Optional: bin, force, sequence (plus 4 more).",
+      "method": "POST",
+      "path": "/v1/import-media",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "paths",
+          "type": "string",
+          "location": "body",
+          "description": "media file paths (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "force",
+          "type": "bool",
+          "location": "body",
+          "description": "import even if the File Path is already in the pool"
+        },
+        {
+          "name": "sequence",
+          "type": "bool",
+          "location": "body",
+          "description": "paths are %0Nd image-sequence patterns"
+        },
+        {
+          "name": "start-index",
+          "type": "int",
+          "location": "body",
+          "description": "start index"
+        },
+        {
+          "name": "end-index",
+          "type": "int",
+          "location": "body",
+          "description": "end index"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "pool_import-paths",
+      "description": "ImportMedia into the current pool folder. Required: paths. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/import",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "paths",
+          "type": "string",
+          "location": "body",
+          "description": "media file paths (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "pool_move-clips",
+      "description": "move media pool clips to a bin. Required: clips, to. Optional: bin, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/move-clips",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clips",
+          "type": "string",
+          "location": "body",
+          "description": "clips (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "location": "body",
+          "description": "target bin",
+          "required": true
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "pool_relink-clips",
+      "description": "relink clips from a filesystem folder, or --unlink. Required: clips. Optional: folder, unlink, bin (plus 2 more).",
+      "method": "POST",
+      "path": "/v1/relink-clips",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clips",
+          "type": "string",
+          "location": "body",
+          "description": "clips (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "location": "body",
+          "description": "folder to relink from"
+        },
+        {
+          "name": "unlink",
+          "type": "bool",
+          "location": "body",
+          "description": "unlink"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "pool_select-clip",
+      "description": "select a media pool clip (GUI selection). Optional: clip, bin, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/select-clip",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip name, unique id, or file path"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "pool_selection",
+      "description": "the editor's current selection.",
+      "method": "GET",
+      "path": "/v1/selection",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "pool_stereo-clip",
+      "description": "create a stereo clip from left + right clips. Required: left-clip, right-clip. Optional: bin, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/stereo-clip",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "left-clip",
+          "type": "string",
+          "location": "body",
+          "description": "left clip",
+          "required": true
+        },
+        {
+          "name": "right-clip",
+          "type": "string",
+          "location": "body",
+          "description": "right clip",
+          "required": true
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "pool_sync-audio",
+      "description": "AutoSyncAudio on video + audio clips (waveform or timecode). Required: clips. Optional: mode, channel, retain-embedded-audio (plus 4 more).",
+      "method": "POST",
+      "path": "/v1/sync-audio",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clips",
+          "type": "string",
+          "location": "body",
+          "description": "clips (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "mode",
+          "type": "string",
+          "location": "body",
+          "description": "mode"
+        },
+        {
+          "name": "channel",
+          "type": "string",
+          "location": "body",
+          "description": "1..n, auto, or mix (waveform mode)"
+        },
+        {
+          "name": "retain-embedded-audio",
+          "type": "bool",
+          "location": "body",
+          "description": "retain embedded audio"
+        },
+        {
+          "name": "retain-video-metadata",
+          "type": "bool",
+          "location": "body",
+          "description": "retain video metadata"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope the clip lookup to this bin path (A/B)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_archive",
+      "description": "REFUSED on purpose: ProjectManager.ArchiveProject crashed Resolve 21-1 from a script (measured 2026-09-09); use export-project or the GUI. Required: path. Optional: name, no-source-media, no-render-cache (plus 3 more).",
+      "method": "POST",
+      "path": "/v1/archive-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "output .dra path",
+          "required": true
+        },
+        {
+          "name": "no-source-media",
+          "type": "bool",
+          "location": "body",
+          "description": "no source media"
+        },
+        {
+          "name": "no-render-cache",
+          "type": "bool",
+          "location": "body",
+          "description": "no render cache"
+        },
+        {
+          "name": "proxy-media",
+          "type": "bool",
+          "location": "body",
+          "description": "proxy media"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_close",
+      "description": "close the current project (no save unless --save). Optional: save, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/close-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "save",
+          "type": "bool",
+          "location": "body",
+          "description": "save before closing"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_cloud",
+      "description": "Blackmagic Cloud project create/load/import/restore (unverified: no cloud library here). Required: action. Optional: name, media-path, path (plus 3 more).",
+      "method": "POST",
+      "path": "/v1/cloud-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "projectName"
+        },
+        {
+          "name": "media-path",
+          "type": "string",
+          "location": "body",
+          "description": "projectMediaPath (required)"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "file (import) or folder (restore)"
+        },
+        {
+          "name": "settings",
+          "type": "string",
+          "location": "body",
+          "description": "extra CloudSettings JSON: isCollab, syncMode, isCameraAccess (JSON value as a string)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_create",
+      "description": "create AND load a project. Required: name. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/create-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "project name",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_database",
+      "description": "current project database and the list of databases.",
+      "method": "GET",
+      "path": "/v1/database",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "project_delete",
+      "description": "delete a project that is not loaded. Required: name. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/delete-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "project name (not the loaded one)",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_export",
+      "description": "export a project to a .drp file. Required: path. Optional: name, no-stills, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/export-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "output .drp path",
+          "required": true
+        },
+        {
+          "name": "no-stills",
+          "type": "bool",
+          "location": "body",
+          "description": "exclude stills and LUTs"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_folder",
+      "description": "project-manager folder navigation: create/delete/open/root/parent. Required: action. Optional: name, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/folder",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "folder name (create/delete/open)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_folders",
+      "description": "project-manager folder listing (folders + projects in the current folder).",
+      "method": "GET",
+      "path": "/v1/folders",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "project_import",
+      "description": "import a .drp project file. Required: path. Optional: name, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/import-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": ".drp path",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "project name to import as"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_list",
+      "description": "projects in the current database folder. Optional: attributes.",
+      "method": "GET",
+      "path": "/v1/projects",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "attributes",
+          "type": "bool",
+          "location": "query",
+          "description": "include per-project attributes (never opens them)"
+        }
+      ]
+    },
+    {
+      "name": "project_load",
+      "description": "load a project (the page-null escape hatch). Required: name. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/load-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "project name (switches the GUI)",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_rename",
+      "description": "rename the current project. Optional: name, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/rename-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_restore",
+      "description": "RestoreProject from a .dra archive. Required: path. Optional: name, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/restore-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": ".dra path",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_save",
+      "description": "SaveProject on the current project. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/save-project",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_set-database",
+      "description": "switch the project database (Disk or PostgreSQL); CLOSES the open project. Required: type, name. Optional: ip, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/set-database",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "type",
+          "type": "string",
+          "location": "body",
+          "description": "DbType",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "DbName",
+          "required": true
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "location": "body",
+          "description": "IpAddress for PostgreSQL"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_set-settings",
+      "description": "set project settings from JSON; one key per call, per-key result, read back. Required: settings. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/set-project-settings",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "settings",
+          "type": "string",
+          "location": "body",
+          "description": "{'timelineFrameRate': '29.97', ...} (JSON value as a string)",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_settings",
+      "description": "all 158 project settings, or one key. Optional: key.",
+      "method": "GET",
+      "path": "/v1/project-settings",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "key",
+          "type": "string",
+          "location": "query",
+          "description": "a single setting key"
+        }
+      ]
+    },
+    {
+      "name": "project_settings-preset",
+      "description": "apply/save/update/delete/export/import a project-settings preset. Required: action, name. Optional: path, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/project-settings-preset",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "preset name",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "file path for export/import"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "project_settings-presets",
+      "description": "project-settings presets (name, width, height).",
+      "method": "GET",
+      "path": "/v1/project-settings-presets",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "render_add-job",
+      "description": "configure (--preset / --format+--codec / --settings / --out / --name) and AddRenderJob with retry. Optional: preset, format, codec (plus 5 more).",
+      "method": "POST",
+      "path": "/v1/add-render-job",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "preset",
+          "type": "string",
+          "location": "body",
+          "description": "preset"
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "location": "body",
+          "description": "format"
+        },
+        {
+          "name": "codec",
+          "type": "string",
+          "location": "body",
+          "description": "codec"
+        },
+        {
+          "name": "settings",
+          "type": "string",
+          "location": "body",
+          "description": "settings (JSON value as a string)"
+        },
+        {
+          "name": "out",
+          "type": "string",
+          "location": "body",
+          "description": "out"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_delete-job",
+      "description": "DeleteRenderJob JOB or --all. Optional: job, all, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/delete-render-job",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "job",
+          "type": "string",
+          "location": "body",
+          "description": "job"
+        },
+        {
+          "name": "all",
+          "type": "bool",
+          "location": "body",
+          "description": "all"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_formats",
+      "description": "render formats, codecs (desc -\u003e ID) for --format, audio formats/codecs (21-1), resolutions, current selection. Optional: format, codec.",
+      "method": "GET",
+      "path": "/v1/render-formats",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "format",
+          "type": "string",
+          "location": "query",
+          "description": "format extension, e.g. mp4"
+        },
+        {
+          "name": "codec",
+          "type": "string",
+          "location": "query",
+          "description": "codec id for resolutions"
+        }
+      ]
+    },
+    {
+      "name": "render_job-status",
+      "description": "one job's status (error strings normalized to Failed). Required: job.",
+      "method": "GET",
+      "path": "/v1/render-job-status",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "job",
+          "type": "string",
+          "location": "query",
+          "description": "job",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "render_jobs",
+      "description": "render queue with normalized per-job status.",
+      "method": "GET",
+      "path": "/v1/render-jobs",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "render_preset",
+      "description": "load / save / update / delete / export / import / quick-export-on / quick-export-off a render preset. Required: action, name. Optional: path, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/render-preset",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "path"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_presets",
+      "description": "render preset names.",
+      "method": "GET",
+      "path": "/v1/render-presets",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "render_queue",
+      "description": "the render queue.",
+      "method": "GET",
+      "path": "/v1/render-status",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "render_quick-export",
+      "description": "RenderWithQuickExport of the current timeline (EnableUpload always off). Required: preset, out, name. Optional: quality, yes (default: true), timeout (default: 120).",
+      "method": "POST",
+      "path": "/v1/quick-export",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "preset",
+          "type": "string",
+          "location": "body",
+          "description": "preset",
+          "required": true
+        },
+        {
+          "name": "out",
+          "type": "string",
+          "location": "body",
+          "description": "out",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name",
+          "required": true
+        },
+        {
+          "name": "quality",
+          "type": "int",
+          "location": "body",
+          "description": "VideoQuality bit rate limit (0 auto)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_quick-export-presets",
+      "description": "Quick Export preset names.",
+      "method": "GET",
+      "path": "/v1/quick-export-presets",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "render_render",
+      "description": "render the current timeline (mp4/H264) with every guard. Optional: out, name, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/render",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "out",
+          "type": "string",
+          "location": "body",
+          "description": "output directory (default <system temp>/_pp_smoke)"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "output stem (default pp_render)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_set-format",
+      "description": "SetCurrentRenderFormatAndCodec (extension + codec ID). Required: format, codec. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/set-render-format",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "format",
+          "type": "string",
+          "location": "body",
+          "description": "format",
+          "required": true
+        },
+        {
+          "name": "codec",
+          "type": "string",
+          "location": "body",
+          "description": "codec",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_set-mode",
+      "description": "render mode: single (one file) or individual (per clip). Required: mode. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/set-render-mode",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "mode",
+          "type": "string",
+          "location": "body",
+          "description": "mode",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_set-settings",
+      "description": "SetRenderSettings one key per call with per-key result (no readback exists; verify by file). Required: settings. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/set-render-settings",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "settings",
+          "type": "string",
+          "location": "body",
+          "description": "settings (JSON value as a string)",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_smoke",
+      "description": "disposable-project end-to-end render proof. Optional: out, yes (default: true), timeout (default: 180).",
+      "method": "POST",
+      "path": "/v1/smoke",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "out",
+          "type": "string",
+          "location": "body",
+          "description": "output directory for the disposable render"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_start",
+      "description": "StartRendering jobs (or all); --wait polls to completion. Optional: jobs, wait, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/start-render",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "jobs",
+          "type": "string",
+          "location": "body",
+          "description": "job ids (default: all) (comma-free single value or a JSON array string)"
+        },
+        {
+          "name": "wait",
+          "type": "bool",
+          "location": "body",
+          "description": "wait"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_stop",
+      "description": "StopRendering. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/stop-render",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "render_verify",
+      "description": "ffprobe an output file (codec/size/fps/duration/audio) and check expectations -- the only render readback. Required: path. Optional: codec, width, height (plus 3 more).",
+      "method": "GET",
+      "path": "/v1/verify-render",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "path",
+          "type": "string",
+          "location": "query",
+          "description": "path",
+          "required": true
+        },
+        {
+          "name": "codec",
+          "type": "string",
+          "location": "query",
+          "description": "codec"
+        },
+        {
+          "name": "width",
+          "type": "int",
+          "location": "query",
+          "description": "width"
+        },
+        {
+          "name": "height",
+          "type": "int",
+          "location": "query",
+          "description": "height"
+        },
+        {
+          "name": "fps",
+          "type": "float",
+          "location": "query",
+          "description": "fps"
+        },
+        {
+          "name": "audio",
+          "type": "bool",
+          "location": "query",
+          "description": "require an audio stream"
+        },
+        {
+          "name": "min-duration",
+          "type": "float",
+          "location": "query",
+          "description": "min duration"
+        }
+      ]
+    },
+    {
+      "name": "storage_browse",
+      "description": "media storage folders (and files with --files) under a path. Required: path. Optional: files.",
+      "method": "GET",
+      "path": "/v1/storage-browse",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "path",
+          "type": "string",
+          "location": "query",
+          "description": "path",
+          "required": true
+        },
+        {
+          "name": "files",
+          "type": "bool",
+          "location": "query",
+          "description": "include files"
+        }
+      ]
+    },
+    {
+      "name": "storage_clone-media",
+      "description": "start (or --stop) a verified media clone (21-1 clone tool). Optional: source, targets, checksum (plus 4 more).",
+      "method": "POST",
+      "path": "/v1/clone-media",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "source",
+          "type": "string",
+          "location": "body",
+          "description": "source directory"
+        },
+        {
+          "name": "targets",
+          "type": "string",
+          "location": "body",
+          "description": "target directories (comma-free single value or a JSON array string)"
+        },
+        {
+          "name": "checksum",
+          "type": "string",
+          "location": "body",
+          "description": "checksum"
+        },
+        {
+          "name": "preserve-folder-name",
+          "type": "bool",
+          "location": "body",
+          "description": "preserve folder name"
+        },
+        {
+          "name": "stop",
+          "type": "bool",
+          "location": "body",
+          "description": "stop the running clone"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "storage_clone-status",
+      "description": "media clone job status (21-1).",
+      "method": "GET",
+      "path": "/v1/clone-status",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "storage_import",
+      "description": "import storage paths into the current pool folder (subclip range, clip mattes, timeline mattes). Required: paths. Optional: start-frame, end-frame, matte-for (plus 5 more).",
+      "method": "POST",
+      "path": "/v1/storage-import",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "paths",
+          "type": "string",
+          "location": "body",
+          "description": "storage paths (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "start-frame",
+          "type": "int",
+          "location": "body",
+          "description": "start frame"
+        },
+        {
+          "name": "end-frame",
+          "type": "int",
+          "location": "body",
+          "description": "end frame"
+        },
+        {
+          "name": "matte-for",
+          "type": "string",
+          "location": "body",
+          "description": "clip ref: add these as clip mattes"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope --matte-for lookup"
+        },
+        {
+          "name": "stereo-eye",
+          "type": "string",
+          "location": "body",
+          "description": "stereo eye"
+        },
+        {
+          "name": "timeline-mattes",
+          "type": "bool",
+          "location": "body",
+          "description": "add as timeline mattes"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "storage_volumes",
+      "description": "media storage mounted volumes.",
+      "method": "GET",
+      "path": "/v1/storage-volumes",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "system_apply",
+      "description": "system presets: KIND layout|burnin|prefs|keyboard|fairlight, ACTION load|save|update|delete|export|import. Required: kind, action. Optional: name, path, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/preset",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "kind",
+          "type": "string",
+          "location": "body",
+          "description": "kind",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "description": "action",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "path"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "system_disable-background-tasks",
+      "description": "DisableBackgroundTasksForCurrentResolveSession (no re-enable; restart Resolve to restore auto-backup). Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/disable-background-tasks",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "system_encrypt-dctl",
+      "description": "21-1 EncryptDCTL a file (--name, --expiry ISO 8601, --out folder). Required: path. Optional: name, expiry, out (plus 2 more).",
+      "method": "POST",
+      "path": "/v1/encrypt-dctl",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "DCTL file",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "encrypted output name"
+        },
+        {
+          "name": "expiry",
+          "type": "string",
+          "location": "body",
+          "description": "ISO 8601"
+        },
+        {
+          "name": "out",
+          "type": "string",
+          "location": "body",
+          "description": "output folder"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "system_export-frame",
+      "description": "ExportCurrentFrameAsStill (.jpg/.png/.tif/.dpx/.drx; page-dependent). Required: path. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/export-frame",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "path",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "system_keyframe-mode",
+      "description": "read the keyframe mode (all|color|sizing).",
+      "method": "GET",
+      "path": "/v1/keyframe-mode",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "system_list",
+      "description": "layout / burn-in / prefs / keyboard (+current) / Fairlight preset lists.",
+      "method": "GET",
+      "path": "/v1/presets",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "system_page",
+      "description": "switch the GUI page. Required: name. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/page",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "page",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "system_quit",
+      "description": "Resolve.Quit() (--save first). Optional: save, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/quit",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "save",
+          "type": "bool",
+          "location": "body",
+          "description": "save"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "system_set-keyframe-mode",
+      "description": "set the keyframe mode. Required: mode. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/set-keyframe-mode",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "mode",
+          "type": "string",
+          "location": "body",
+          "description": "mode",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "system_status",
+      "description": "product, version, Studio flag, page (null = writes will fail), project, timeline, database, keyboard preset, rendering.",
+      "method": "GET",
+      "path": "/v1/status",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "system_thumbnail",
+      "description": "GetCurrentClipThumbnailImage (Color page) -\u003e --out FILE.ppm. Optional: out.",
+      "method": "GET",
+      "path": "/v1/thumbnail",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "out",
+          "type": "string",
+          "location": "query",
+          "description": "out"
+        }
+      ]
+    },
+    {
+      "name": "system_validate-dctl",
+      "description": "21-1 ValidateDCTL from --source text or --path file. Optional: source, path.",
+      "method": "GET",
+      "path": "/v1/validate-dctl",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "source",
+          "type": "string",
+          "location": "query",
+          "description": "DCTL source text"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "location": "query",
+          "description": "DCTL file"
+        }
+      ]
+    },
+    {
+      "name": "timeline_add-marker",
+      "description": "add a timeline marker (or --item for a clip-relative item marker). Required: frame. Optional: color (default: Blue), name, note (plus 6 more).",
+      "method": "POST",
+      "path": "/v1/add-marker",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "frame",
+          "type": "int",
+          "location": "body",
+          "description": "frame",
+          "required": true
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "location": "body",
+          "description": "color"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "location": "body",
+          "description": "note"
+        },
+        {
+          "name": "duration",
+          "type": "int",
+          "location": "body",
+          "description": "duration"
+        },
+        {
+          "name": "custom-data",
+          "type": "string",
+          "location": "body",
+          "description": "custom data (JSON value as a string)"
+        },
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3' (track:position), unique id, or name"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_add-track",
+      "description": "AddTrack video/audio/subtitle (audio: --subtype mono|stereo|5.1|). Required: type. Optional: subtype, timeline, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/add-track",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "type",
+          "type": "string",
+          "location": "body",
+          "description": "type",
+          "required": true
+        },
+        {
+          "name": "subtype",
+          "type": "string",
+          "location": "body",
+          "description": "subtype"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_ai",
+      "description": "subtitles / scene-cuts / stereo / dolby-vision / normalize (21-1) / auto-align (21-1). Required: op. Optional: language, preset, chars-per-line (plus 11 more).",
+      "method": "POST",
+      "path": "/v1/timeline-ai",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "op",
+          "type": "string",
+          "location": "body",
+          "description": "op",
+          "required": true
+        },
+        {
+          "name": "language",
+          "type": "string",
+          "location": "body",
+          "description": "language"
+        },
+        {
+          "name": "preset",
+          "type": "string",
+          "location": "body",
+          "description": "preset"
+        },
+        {
+          "name": "chars-per-line",
+          "type": "int",
+          "location": "body",
+          "description": "chars per line"
+        },
+        {
+          "name": "line-break",
+          "type": "string",
+          "location": "body",
+          "description": "line break"
+        },
+        {
+          "name": "gap",
+          "type": "int",
+          "location": "body",
+          "description": "gap"
+        },
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item refs (comma-free single value or a JSON array string)"
+        },
+        {
+          "name": "mode",
+          "type": "string",
+          "location": "body",
+          "description": "normalize: mode name from normalize-modes; auto-align: waveform|timecode"
+        },
+        {
+          "name": "target-level",
+          "type": "float",
+          "location": "body",
+          "description": "target level"
+        },
+        {
+          "name": "target-loudness",
+          "type": "float",
+          "location": "body",
+          "description": "target loudness"
+        },
+        {
+          "name": "independent",
+          "type": "bool",
+          "location": "body",
+          "description": "independent"
+        },
+        {
+          "name": "options",
+          "type": "string",
+          "location": "body",
+          "description": "options (JSON value as a string)"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_append",
+      "description": "AppendToTimeline with pre-resolved geometry + readback (current timeline only). Optional: clip, start-frame, end-frame (plus 7 more).",
+      "method": "POST",
+      "path": "/v1/append",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "clip",
+          "type": "string",
+          "location": "body",
+          "description": "clip ref"
+        },
+        {
+          "name": "start-frame",
+          "type": "int",
+          "location": "body",
+          "description": "start frame"
+        },
+        {
+          "name": "end-frame",
+          "type": "int",
+          "location": "body",
+          "description": "end frame"
+        },
+        {
+          "name": "record-frame",
+          "type": "int",
+          "location": "body",
+          "description": "record frame"
+        },
+        {
+          "name": "track-index",
+          "type": "int",
+          "location": "body",
+          "description": "destination track index"
+        },
+        {
+          "name": "media-type",
+          "type": "string",
+          "location": "body",
+          "description": "media type"
+        },
+        {
+          "name": "batch",
+          "type": "string",
+          "location": "body",
+          "description": "[{'clip':..,'startFrame':..,'endFrame':..,'recordFrame':..,'trackIndex':..,'mediaType':1|2}] (JSON value as a string)"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope clip lookups to this bin path"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_build",
+      "description": "edit-spec -\u003e media pool + new timeline with readback. Required: spec. Optional: fps, lut, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/build",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "spec",
+          "type": "string",
+          "location": "body",
+          "description": "edit-spec JSON (schema 1.0.0)",
+          "required": true
+        },
+        {
+          "name": "fps",
+          "type": "string",
+          "location": "body",
+          "description": "Resolve frame-rate string, e.g. 29.97"
+        },
+        {
+          "name": "lut",
+          "type": "string",
+          "location": "body",
+          "description": "grade NAME=PATH mappings (comma-free single value or a JSON array string)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_clips",
+      "description": "items per track of a timeline. Optional: audio, timeline.",
+      "method": "GET",
+      "path": "/v1/clips",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "audio",
+          "type": "bool",
+          "location": "query",
+          "description": "include audio tracks"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_compound-clip",
+      "description": "CreateCompoundClip from items. Required: items. Optional: name, start-timecode, timeline (plus 2 more).",
+      "method": "POST",
+      "path": "/v1/compound-clip",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "items (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "start-timecode",
+          "type": "string",
+          "location": "body",
+          "description": "start timecode"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_create",
+      "description": "CreateEmptyTimeline in the current project. Required: name. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/create-timeline",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "timeline name",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_create-from-clips",
+      "description": "CreateTimelineFromClips: whole clips (positional refs) or --items JSON [{clip,startFrame,endFrame,recordFrame}]. Required: name. Optional: clips, batch, bin (plus 2 more).",
+      "method": "POST",
+      "path": "/v1/create-timeline-from-clips",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name",
+          "required": true
+        },
+        {
+          "name": "clips",
+          "type": "string",
+          "location": "body",
+          "description": "clip refs (comma-free single value or a JSON array string)"
+        },
+        {
+          "name": "batch",
+          "type": "string",
+          "location": "body",
+          "description": "[{'clip':..,'startFrame':..,'endFrame':..,'recordFrame':..}] (JSON value as a string)"
+        },
+        {
+          "name": "bin",
+          "type": "string",
+          "location": "body",
+          "description": "scope clip lookups to this bin path"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_delete",
+      "description": "delete a timeline by name. Required: name. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/delete-timeline",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_delete-marker",
+      "description": "delete timeline/item markers by --frame, --custom-data or --color/All. Optional: frame, custom-data, color (plus 4 more).",
+      "method": "POST",
+      "path": "/v1/delete-marker",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "frame",
+          "type": "int",
+          "location": "body",
+          "description": "frame"
+        },
+        {
+          "name": "custom-data",
+          "type": "string",
+          "location": "body",
+          "description": "custom data (JSON value as a string)"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "location": "body",
+          "description": "color"
+        },
+        {
+          "name": "item",
+          "type": "string",
+          "location": "body",
+          "description": "timeline item: 'V1:3' (track:position), unique id, or name"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_delete-track",
+      "description": "DeleteTrack. Required: track. Optional: timeline, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/delete-track",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "track",
+          "type": "string",
+          "location": "body",
+          "description": "V2 / A1",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_duplicate",
+      "description": "duplicate a timeline under a new name. Required: name. Optional: timeline, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/duplicate-timeline",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "new name",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_export",
+      "description": "Timeline.Export to AAF/DRT/EDL/FCPXML/OTIO/CSV/ALE/. Required: path, type. Optional: subtype, timeline, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/export-timeline",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "path",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "body",
+          "description": "type",
+          "required": true
+        },
+        {
+          "name": "subtype",
+          "type": "string",
+          "location": "body",
+          "description": "AAF: aaf_new|aaf_existing; EDL: cdl|sdl|missing_clips|none"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_export-spec",
+      "description": "serialize a timeline to edit-spec JSON. Optional: timeline.",
+      "method": "GET",
+      "path": "/v1/export-spec",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline"
+        }
+      ]
+    },
+    {
+      "name": "timeline_fusion-clip",
+      "description": "CreateFusionClip from items. Required: items. Optional: timeline, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/fusion-clip",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "description": "items (comma-free single value or a JSON array string)",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_grab-still",
+      "description": "GrabStill at the playhead, or --all first|middle for every clip. Optional: all, timeline, yes (default: true) (plus 1 more).",
+      "method": "POST",
+      "path": "/v1/grab-still",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "all",
+          "type": "string",
+          "location": "body",
+          "description": "all"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_import",
+      "description": "ImportTimelineFromFile (new timeline) or --into (AAF into the current timeline). Required: path. Optional: name, source-clips-path, no-import-source-clips (plus 4 more).",
+      "method": "POST",
+      "path": "/v1/import-timeline",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "path",
+          "type": "string",
+          "location": "body",
+          "description": "path",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "timelineName"
+        },
+        {
+          "name": "source-clips-path",
+          "type": "string",
+          "location": "body",
+          "description": "source clips path"
+        },
+        {
+          "name": "no-import-source-clips",
+          "type": "bool",
+          "location": "body",
+          "description": "no import source clips"
+        },
+        {
+          "name": "into",
+          "type": "bool",
+          "location": "body",
+          "description": "into"
+        },
+        {
+          "name": "options",
+          "type": "string",
+          "location": "body",
+          "description": "extra ImportOptions / AAFImportOptions JSON (JSON value as a string)"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_info",
+      "description": "timeline geometry, rate, resolution, track counts, marks, blanking. Optional: timeline.",
+      "method": "GET",
+      "path": "/v1/timeline-info",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "timeline_insert-generator",
+      "description": "insert a generator / fusion-generator / ofx-generator / title / fusion-title / fusion-composition at the playhead. Optional: name, kind, at (plus 2 more).",
+      "method": "POST",
+      "path": "/v1/insert-generator",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "'Solid Color', 'Text+', ..."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "location": "body",
+          "description": "kind"
+        },
+        {
+          "name": "at",
+          "type": "string",
+          "location": "body",
+          "description": "timecode to move the playhead to first"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_list",
+      "description": "timelines in the open project.",
+      "method": "GET",
+      "path": "/v1/timelines",
+      "no_auth": true,
+      "params": []
+    },
+    {
+      "name": "timeline_mark",
+      "description": "set (--mark-in/--mark-out) or --clear timeline mark in/out. Optional: mark-in, mark-out, type (plus 4 more).",
+      "method": "POST",
+      "path": "/v1/timeline-mark",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "mark-in",
+          "type": "int",
+          "location": "body",
+          "description": "mark in"
+        },
+        {
+          "name": "mark-out",
+          "type": "int",
+          "location": "body",
+          "description": "mark out"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "body",
+          "description": "type"
+        },
+        {
+          "name": "clear",
+          "type": "bool",
+          "location": "body",
+          "description": "clear"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_markers",
+      "description": "timeline markers (frames relative to start). Optional: timeline.",
+      "method": "GET",
+      "path": "/v1/timeline-markers",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "timeline_normalize-modes",
+      "description": "21-1 GetNormalizeAudioModes. Optional: timeline.",
+      "method": "GET",
+      "path": "/v1/normalize-modes",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "timeline_rename",
+      "description": "rename a timeline. Required: name. Optional: timeline, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/rename-timeline",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_set-blanking",
+      "description": "21-1 timeline output blanking (pixels). Optional: top, bottom, left (plus 4 more).",
+      "method": "POST",
+      "path": "/v1/set-blanking",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "top",
+          "type": "int",
+          "location": "body",
+          "description": "top"
+        },
+        {
+          "name": "bottom",
+          "type": "int",
+          "location": "body",
+          "description": "bottom"
+        },
+        {
+          "name": "left",
+          "type": "int",
+          "location": "body",
+          "description": "left"
+        },
+        {
+          "name": "right",
+          "type": "int",
+          "location": "body",
+          "description": "right"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_set-settings",
+      "description": "set timeline settings from JSON; useCustomSettings applied first; frame rate is fixed at creation. Required: settings. Optional: timeline, yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/set-timeline-settings",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "settings",
+          "type": "string",
+          "location": "body",
+          "description": "settings (JSON value as a string)",
+          "required": true
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_set-timecode",
+      "description": "move the playhead (--playhead TC) / set start TC (--start TC). Optional: playhead, start, timeline (plus 2 more).",
+      "method": "POST",
+      "path": "/v1/set-timecode",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "playhead",
+          "type": "string",
+          "location": "body",
+          "description": "playhead"
+        },
+        {
+          "name": "start",
+          "type": "string",
+          "location": "body",
+          "description": "start"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_set-track",
+      "description": "rename / enable / lock / voice-isolate a track. Required: track. Optional: name, enable, lock (plus 5 more).",
+      "method": "POST",
+      "path": "/v1/set-track",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "track",
+          "type": "string",
+          "location": "body",
+          "description": "V2 / A1",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name"
+        },
+        {
+          "name": "enable",
+          "type": "string",
+          "location": "body",
+          "description": "enable"
+        },
+        {
+          "name": "lock",
+          "type": "string",
+          "location": "body",
+          "description": "lock"
+        },
+        {
+          "name": "voice-isolation",
+          "type": "string",
+          "location": "body",
+          "description": "voice isolation"
+        },
+        {
+          "name": "voice-isolation-amount",
+          "type": "int",
+          "location": "body",
+          "description": "voice isolation amount"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "body",
+          "description": "named timeline (never switches the GUI); default: current"
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_settings",
+      "description": "timeline settings (project settings unless useCustomSettings=1). Optional: key, timeline.",
+      "method": "GET",
+      "path": "/v1/timeline-settings",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "key",
+          "type": "string",
+          "location": "query",
+          "description": "key"
+        },
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "timeline_switch",
+      "description": "make a timeline current (switches the GUI). Required: name. Optional: yes (default: true), timeout (default: 25).",
+      "method": "POST",
+      "path": "/v1/switch-timeline",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "description": "name",
+          "required": true
+        },
+        {
+          "name": "yes",
+          "type": "bool",
+          "location": "body",
+          "description": "confirm the write (the bridge refuses without it)"
+        },
+        {
+          "name": "timeout",
+          "type": "int",
+          "location": "body",
+          "description": "per-call watchdog seconds (a trip stops the sidecar)"
+        }
+      ]
+    },
+    {
+      "name": "timeline_timecode",
+      "description": "playhead + start timecode + frame range. Optional: timeline.",
+      "method": "GET",
+      "path": "/v1/timecode",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    },
+    {
+      "name": "timeline_tracks",
+      "description": "tracks with name, enabled, locked, subtype, item count, voice isolation. Optional: timeline.",
+      "method": "GET",
+      "path": "/v1/tracks",
+      "no_auth": true,
+      "params": [
+        {
+          "name": "timeline",
+          "type": "string",
+          "location": "query",
+          "description": "named timeline (never switches the GUI); default: current"
+        }
+      ]
+    }
+  ],
+  "novel_features": [
+    {
+      "name": "Ops/run history log",
+      "command": "runs list",
+      "description": "See exactly which commands this CLI has run, whether each succeeded, and whether Resolve was too busy and had to be retried."
+    },
+    {
+      "name": "Cross-project marker search",
+      "command": "marker search",
+      "description": "Find a marker by text across every project this CLI has touched, not just the one currently open in Resolve."
+    },
+    {
+      "name": "Cross-project render history \u0026 delivery audit",
+      "command": "render history",
+      "description": "See every render this CLI has ever queued across all projects, with the actual output file verified against the requested spec."
+    },
+    {
+      "name": "Grade-version drift audit across projects",
+      "command": "color audit",
+      "description": "See which timelines are still on an old color grade version across your whole project library, not just the one open in Resolve."
+    },
+    {
+      "name": "Fusion/Title content catalog \u0026 search",
+      "command": "fusion titles search",
+      "description": "Find what text was used in a past Text+/title, across every project, without reopening it."
+    },
+    {
+      "name": "Timeline edit-log / operation history",
+      "command": "timeline log",
+      "description": "See the full append/delete history for one timeline — the only record of what actually changed, since Resolve has no undo API."
+    },
+    {
+      "name": "Doctor environment-drift history",
+      "command": "doctor history",
+      "description": "See whether this machine's Resolve/Python environment has drifted since yesterday, not just whether it's healthy right now."
+    }
+  ]
+}

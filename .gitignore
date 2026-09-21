@@ -1,0 +1,16 @@
+# Go build output
+cli/bin/
+cli/dist/
+*.exe
+*.mcpb
+
+# Bridge deploy artifacts (created by deploy.ps1 in the target folder)
+python312/
+python-pin.txt
+build-info.json
+deployed-manifest.json
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/

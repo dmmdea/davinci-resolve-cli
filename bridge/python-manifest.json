@@ -1,0 +1,9 @@
+{
+  "purpose": "Pinned interpreter for the Resolve bridge. fusionscript.dll in Resolve 21.0.4.5 binds cleanly ONLY against CPython 3.12.x (measured 2026-08-23 on one Windows machine: 3.12.10 works; 3.11.9 and 3.14.7 crash 0xC0000005 in PyInit_fusionscript). The pin is the crash fix; it is exact by design, not staleness. Re-measure before changing on any Resolve upgrade.",
+  "python_version": "3.12.10",
+  "distribution": "python.org embeddable (no installer, no registry, per-tree)",
+  "url": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip",
+  "sha256": "4ACBED6DD1C744B0376E3B1CF57CE906F9DC9E95E68824584C8099A63025A3C3",
+  "size_bytes": 11133606,
+  "install": "expand the zip to python312/ next to the bridge scripts, then copy the versioned python312._pth from this directory over python312/python312._pth (the '..' line puts the bridge directory on sys.path; the embeddable build is isolated and ignores PYTHONPATH/script dir). deploy.ps1 automates both."
+}

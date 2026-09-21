@@ -1,0 +1,5330 @@
+name: davinci-resolve
+description: 'Drive DaVinci Resolve Studio through the resolve_bridge sidecar: 146 measured operations, page-null/modal-stall/handle-aware
+  guards, transcript readback, transitions, multicam, render verify-by-file'
+cli_description: Every documented DaVinci Resolve scripting operation, plus the cross-project history and doctor diagnostics
+  that Resolve itself — and every other Resolve CLI or MCP server — throws away.
+version: 0.1.0
+category: media-and-entertainment
+base_url: http://127.0.0.1:18800
+health_check_path: /healthz
+auth:
+  type: none
+config:
+  format: toml
+  path: ~/.config/davinci-resolve-pp-cli/config.toml
+learn:
+  disabled: true
+mcp:
+  transport:
+  - stdio
+  - http
+  orchestration: code
+  endpoint_tools: hidden
+resources:
+  system:
+    description: 'Resolve app state: status, page, system presets, keyframe mode, background tasks, DCTL, quit'
+    endpoints:
+      status:
+        method: GET
+        path: /v1/status
+        description: product, version, Studio flag, page (null = writes will fail), project, timeline, database, keyboard
+          preset, rendering
+        params: []
+        mutation: false
+        response:
+          type: object
+      list:
+        method: GET
+        path: /v1/presets
+        description: layout / burn-in / prefs / keyboard (+current) / Fairlight preset lists
+        params: []
+        mutation: false
+        response:
+          type: object
+      apply:
+        method: POST
+        path: /v1/preset
+        description: 'system presets: KIND layout|burnin|prefs|keyboard|fairlight, ACTION load|save|update|delete|export|import'
+        happy_args: --dry-run
+        body:
+        - name: kind
+          type: string
+          required: true
+          positional: false
+          description: kind
+          enum:
+          - layout
+          - burnin
+          - prefs
+          - keyboard
+          - fairlight
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - load
+          - save
+          - update
+          - delete
+          - export
+          - import
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: path
+          type: string
+          required: false
+          positional: false
+          description: path
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      keyframe-mode:
+        method: GET
+        path: /v1/keyframe-mode
+        description: read the keyframe mode (all|color|sizing)
+        params: []
+        mutation: false
+        response:
+          type: object
+      set-keyframe-mode:
+        method: POST
+        path: /v1/set-keyframe-mode
+        description: set the keyframe mode
+        happy_args: --mode=all;--yes
+        body:
+        - name: mode
+          type: string
+          required: true
+          positional: false
+          description: mode
+          enum:
+          - all
+          - color
+          - sizing
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      disable-background-tasks:
+        method: POST
+        path: /v1/disable-background-tasks
+        description: DisableBackgroundTasksForCurrentResolveSession (no re-enable; restart Resolve to restore auto-backup)
+        happy_args: --dry-run
+        body:
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      quit:
+        method: POST
+        path: /v1/quit
+        description: Resolve.Quit() (--save first)
+        happy_args: --dry-run
+        body:
+        - name: save
+          type: bool
+          required: false
+          positional: false
+          description: save
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      page:
+        method: POST
+        path: /v1/page
+        description: switch the GUI page
+        happy_args: --name=edit;--yes
+        body:
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: page
+          enum:
+          - media
+          - cut
+          - edit
+          - fusion
+          - color
+          - fairlight
+          - deliver
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      validate-dctl:
+        method: GET
+        path: /v1/validate-dctl
+        description: 21-1 ValidateDCTL from --source text or --path file
+        happy_args: --path=C:/ProgramData/Blackmagic Design/DaVinci Resolve/Support/Developer/DaVinciCTL/Gain.dctl
+        params:
+        - name: source
+          type: string
+          required: false
+          positional: false
+          description: DCTL source text
+        - name: path
+          type: string
+          required: false
+          positional: false
+          description: DCTL file
+        mutation: false
+        response:
+          type: object
+      encrypt-dctl:
+        method: POST
+        path: /v1/encrypt-dctl
+        description: 21-1 EncryptDCTL a file (--name, --expiry ISO 8601, --out folder)
+        happy_args: --dry-run
+        body:
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: DCTL file
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: encrypted output name
+        - name: expiry
+          type: string
+          required: false
+          positional: false
+          description: ISO 8601
+        - name: out
+          type: string
+          required: false
+          positional: false
+          description: output folder
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      thumbnail:
+        method: GET
+        path: /v1/thumbnail
+        description: GetCurrentClipThumbnailImage (Color page) -> --out FILE.ppm
+        happy_args: --dry-run
+        params:
+        - name: out
+          type: string
+          required: false
+          positional: false
+          description: out
+        mutation: false
+        response:
+          type: object
+      export-frame:
+        method: POST
+        path: /v1/export-frame
+        description: ExportCurrentFrameAsStill (.jpg/.png/.tif/.dpx/.drx; page-dependent)
+        happy_args: --dry-run
+        body:
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: path
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+  project:
+    description: project manager, database, folders, project settings and settings presets
+    endpoints:
+      list:
+        method: GET
+        path: /v1/projects
+        description: projects in the current database folder
+        params:
+        - name: attributes
+          type: bool
+          required: false
+          positional: false
+          description: include per-project attributes (never opens them)
+        mutation: false
+        response:
+          type: object
+      create:
+        method: POST
+        path: /v1/create-project
+        description: create AND load a project
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: project name
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      load:
+        method: POST
+        path: /v1/load-project
+        description: load a project (the page-null escape hatch)
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: project name (switches the GUI)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      delete:
+        method: POST
+        path: /v1/delete-project
+        description: delete a project that is not loaded
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: project name (not the loaded one)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      save:
+        method: POST
+        path: /v1/save-project
+        description: SaveProject on the current project
+        happy_args: --yes
+        body:
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      close:
+        method: POST
+        path: /v1/close-project
+        description: close the current project (no save unless --save)
+        happy_args: --dry-run
+        body:
+        - name: save
+          type: bool
+          required: false
+          positional: false
+          description: save before closing
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      rename:
+        method: POST
+        path: /v1/rename-project
+        description: rename the current project
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      export:
+        method: POST
+        path: /v1/export-project
+        description: export a project to a .drp file
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: output .drp path
+        - name: no-stills
+          type: bool
+          required: false
+          positional: false
+          description: exclude stills and LUTs
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      import:
+        method: POST
+        path: /v1/import-project
+        description: import a .drp project file
+        happy_args: --dry-run
+        body:
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: .drp path
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: project name to import as
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      archive:
+        method: POST
+        path: /v1/archive-project
+        description: 'REFUSED on purpose: ProjectManager.ArchiveProject crashed Resolve 21-1 from a script (measured 2026-09-09);
+          use export-project or the GUI'
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: output .dra path
+        - name: no-source-media
+          type: bool
+          required: false
+          positional: false
+          description: no source media
+        - name: no-render-cache
+          type: bool
+          required: false
+          positional: false
+          description: no render cache
+        - name: proxy-media
+          type: bool
+          required: false
+          positional: false
+          description: proxy media
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      restore:
+        method: POST
+        path: /v1/restore-project
+        description: RestoreProject from a .dra archive
+        happy_args: --dry-run
+        body:
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: .dra path
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      cloud:
+        method: POST
+        path: /v1/cloud-project
+        description: 'Blackmagic Cloud project create/load/import/restore (unverified: no cloud library here)'
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - create
+          - load
+          - import
+          - restore
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: projectName
+        - name: media-path
+          type: string
+          required: false
+          positional: false
+          description: projectMediaPath (required)
+        - name: path
+          type: string
+          required: false
+          positional: false
+          description: file (import) or folder (restore)
+        - name: settings
+          type: string
+          required: false
+          positional: false
+          description: 'extra CloudSettings JSON: isCollab, syncMode, isCameraAccess (JSON value as a string)'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      settings:
+        method: GET
+        path: /v1/project-settings
+        description: all 158 project settings, or one key
+        happy_args: --key=timelineFrameRate
+        params:
+        - name: key
+          type: string
+          required: false
+          positional: false
+          description: a single setting key
+        mutation: false
+        response:
+          type: object
+      set-settings:
+        method: POST
+        path: /v1/set-project-settings
+        description: set project settings from JSON; one key per call, per-key result, read back
+        happy_args: --dry-run
+        body:
+        - name: settings
+          type: string
+          required: true
+          positional: false
+          description: '{"timelineFrameRate": "29.97", ...} (JSON value as a string)'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      settings-presets:
+        method: GET
+        path: /v1/project-settings-presets
+        description: project-settings presets (name, width, height)
+        params: []
+        mutation: false
+        response:
+          type: object
+      settings-preset:
+        method: POST
+        path: /v1/project-settings-preset
+        description: apply/save/update/delete/export/import a project-settings preset
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - apply
+          - save
+          - update
+          - delete
+          - export
+          - import
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: preset name
+        - name: path
+          type: string
+          required: false
+          positional: false
+          description: file path for export/import
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      database:
+        method: GET
+        path: /v1/database
+        description: current project database and the list of databases
+        params: []
+        mutation: false
+        response:
+          type: object
+      set-database:
+        method: POST
+        path: /v1/set-database
+        description: switch the project database (Disk or PostgreSQL); CLOSES the open project
+        happy_args: --dry-run
+        body:
+        - name: type
+          type: string
+          required: true
+          positional: false
+          description: DbType
+          enum:
+          - Disk
+          - PostgreSQL
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: DbName
+        - name: ip
+          type: string
+          required: false
+          positional: false
+          description: IpAddress for PostgreSQL
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      folders:
+        method: GET
+        path: /v1/folders
+        description: project-manager folder listing (folders + projects in the current folder)
+        params: []
+        mutation: false
+        response:
+          type: object
+      folder:
+        method: POST
+        path: /v1/folder
+        description: 'project-manager folder navigation: create/delete/open/root/parent'
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - create
+          - delete
+          - open
+          - root
+          - parent
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: folder name (create/delete/open)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+  storage:
+    description: media storage browsing/import and the 21.1 clone tool
+    endpoints:
+      volumes:
+        method: GET
+        path: /v1/storage-volumes
+        description: media storage mounted volumes
+        params: []
+        mutation: false
+        response:
+          type: object
+      browse:
+        method: GET
+        path: /v1/storage-browse
+        description: media storage folders (and files with --files) under a path
+        happy_args: --path=C:/Media
+        params:
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: path
+        - name: files
+          type: bool
+          required: false
+          positional: false
+          description: include files
+        mutation: false
+        response:
+          type: object
+      import:
+        method: POST
+        path: /v1/storage-import
+        description: import storage paths into the current pool folder (subclip range, clip mattes, timeline mattes)
+        happy_args: --dry-run
+        body:
+        - name: paths
+          type: string
+          required: true
+          positional: false
+          description: storage paths (comma-free single value or a JSON array string)
+        - name: start-frame
+          type: int
+          required: false
+          positional: false
+          description: start frame
+        - name: end-frame
+          type: int
+          required: false
+          positional: false
+          description: end frame
+        - name: matte-for
+          type: string
+          required: false
+          positional: false
+          description: 'clip ref: add these as clip mattes'
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope --matte-for lookup
+        - name: stereo-eye
+          type: string
+          required: false
+          positional: false
+          description: stereo eye
+          enum:
+          - left
+          - right
+        - name: timeline-mattes
+          type: bool
+          required: false
+          positional: false
+          description: add as timeline mattes
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      clone-status:
+        method: GET
+        path: /v1/clone-status
+        description: media clone job status (21-1)
+        params: []
+        mutation: false
+        response:
+          type: object
+      clone-media:
+        method: POST
+        path: /v1/clone-media
+        description: start (or --stop) a verified media clone (21-1 clone tool)
+        happy_args: --dry-run
+        body:
+        - name: source
+          type: string
+          required: false
+          positional: false
+          description: source directory
+        - name: targets
+          type: string
+          required: false
+          positional: false
+          description: target directories (comma-free single value or a JSON array string)
+        - name: checksum
+          type: string
+          required: false
+          positional: false
+          description: checksum
+          enum:
+          - none
+          - filesize
+          - crc32
+          - md5
+          - sha256
+          - sha512
+          - xxh64
+        - name: preserve-folder-name
+          type: bool
+          required: false
+          positional: false
+          description: preserve folder name
+        - name: stop
+          type: bool
+          required: false
+          positional: false
+          description: stop the running clone
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+  pool:
+    description: media pool bins and clip lifecycle
+    endpoints:
+      clips:
+        method: GET
+        path: /v1/pool
+        description: media pool clips
+        happy_args: --recursive
+        params:
+        - name: recursive
+          type: bool
+          required: false
+          positional: false
+          description: walk all media pool folders
+        mutation: false
+        response:
+          type: object
+      bins:
+        method: GET
+        path: /v1/bins
+        description: media pool bin tree with clip counts
+        params:
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        mutation: false
+        response:
+          type: object
+      bin:
+        method: POST
+        path: /v1/bin
+        description: create (idempotent) / delete / set-current / move / refresh a bin
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - create
+          - delete
+          - set-current
+          - move
+          - refresh
+        - name: path
+          type: string
+          required: false
+          positional: false
+          description: bin path A/B
+        - name: to
+          type: string
+          required: false
+          positional: false
+          description: target bin path (move)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      import-paths:
+        method: POST
+        path: /v1/import
+        description: ImportMedia into the current pool folder
+        happy_args: --dry-run
+        body:
+        - name: paths
+          type: string
+          required: true
+          positional: false
+          description: media file paths (comma-free single value or a JSON array string)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      import:
+        method: POST
+        path: /v1/import-media
+        description: import media into a bin, skipping paths already in the pool (idempotent)
+        happy_args: --dry-run
+        body:
+        - name: paths
+          type: string
+          required: true
+          positional: false
+          description: media file paths (comma-free single value or a JSON array string)
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: force
+          type: bool
+          required: false
+          positional: false
+          description: import even if the File Path is already in the pool
+        - name: sequence
+          type: bool
+          required: false
+          positional: false
+          description: paths are %0Nd image-sequence patterns
+        - name: start-index
+          type: int
+          required: false
+          positional: false
+          description: start index
+        - name: end-index
+          type: int
+          required: false
+          positional: false
+          description: end index
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      delete-clips:
+        method: POST
+        path: /v1/delete-clips
+        description: 'delete media pool clips (--all-matches: every duplicate of a name/path)'
+        happy_args: --dry-run
+        body:
+        - name: clips
+          type: string
+          required: true
+          positional: false
+          description: clip refs (comma-free single value or a JSON array string)
+        - name: all-matches
+          type: bool
+          required: false
+          positional: false
+          description: all matches
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      move-clips:
+        method: POST
+        path: /v1/move-clips
+        description: move media pool clips to a bin
+        happy_args: --dry-run
+        body:
+        - name: clips
+          type: string
+          required: true
+          positional: false
+          description: clips (comma-free single value or a JSON array string)
+        - name: to
+          type: string
+          required: true
+          positional: false
+          description: target bin
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      relink-clips:
+        method: POST
+        path: /v1/relink-clips
+        description: relink clips from a filesystem folder, or --unlink
+        happy_args: --dry-run
+        body:
+        - name: clips
+          type: string
+          required: true
+          positional: false
+          description: clips (comma-free single value or a JSON array string)
+        - name: folder
+          type: string
+          required: false
+          positional: false
+          description: folder to relink from
+        - name: unlink
+          type: bool
+          required: false
+          positional: false
+          description: unlink
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      select-clip:
+        method: POST
+        path: /v1/select-clip
+        description: select a media pool clip (GUI selection)
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      stereo-clip:
+        method: POST
+        path: /v1/stereo-clip
+        description: create a stereo clip from left + right clips
+        happy_args: --dry-run
+        body:
+        - name: left-clip
+          type: string
+          required: true
+          positional: false
+          description: left clip
+        - name: right-clip
+          type: string
+          required: true
+          positional: false
+          description: right clip
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      sync-audio:
+        method: POST
+        path: /v1/sync-audio
+        description: AutoSyncAudio on video + audio clips (waveform or timecode)
+        happy_args: --dry-run
+        body:
+        - name: clips
+          type: string
+          required: true
+          positional: false
+          description: clips (comma-free single value or a JSON array string)
+        - name: mode
+          type: string
+          required: false
+          positional: false
+          description: mode
+          enum:
+          - waveform
+          - timecode
+        - name: channel
+          type: string
+          required: false
+          positional: false
+          description: 1..n, auto, or mix (waveform mode)
+        - name: retain-embedded-audio
+          type: bool
+          required: false
+          positional: false
+          description: retain embedded audio
+        - name: retain-video-metadata
+          type: bool
+          required: false
+          positional: false
+          description: retain video metadata
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      selection:
+        method: GET
+        path: /v1/selection
+        description: the editor's current selection
+        params: []
+        mutation: false
+        response:
+          type: object
+  clip:
+    description: 'one media pool clip: properties, metadata, markers, flags, marks, proxies, AI passes, transcription'
+    endpoints:
+      info:
+        method: GET
+        path: /v1/clip-info
+        description: every clip property + metadata, flags, color, marks, markers, audio mapping
+        happy_args: --clip=ref_a.mp4
+        params:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        mutation: false
+        response:
+          type: object
+      set-property:
+        method: POST
+        path: /v1/set-clip-property
+        description: SetClipProperty (FPS, Alpha mode, Super Scale, ) with readback
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: key
+          type: string
+          required: true
+          positional: false
+          description: key
+        - name: value
+          type: string
+          required: true
+          positional: false
+          description: value
+        - name: sharpness
+          type: float
+          required: false
+          positional: false
+          description: Super Scale 2x Enhanced sharpness 0..1
+        - name: noise-reduction
+          type: float
+          required: false
+          positional: false
+          description: Super Scale 2x Enhanced NR 0..1
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      set-metadata:
+        method: POST
+        path: /v1/set-clip-metadata
+        description: SetMetadata / --third-party SetThirdPartyMetadata from JSON
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: metadata
+          type: string
+          required: true
+          positional: false
+          description: metadata (JSON value as a string)
+        - name: third-party
+          type: bool
+          required: false
+          positional: false
+          description: third party
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      rename:
+        method: POST
+        path: /v1/rename-clip
+        description: rename a media pool clip
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: name
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      markers:
+        method: GET
+        path: /v1/clip-markers
+        description: markers on a media pool clip (customData decoded)
+        happy_args: --clip=ref_a.mp4
+        params:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        mutation: false
+        response:
+          type: object
+      add-marker:
+        method: POST
+        path: /v1/add-clip-marker
+        description: add a marker to a media pool clip
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: frame
+          type: int
+          required: true
+          positional: false
+          description: frame
+        - name: color
+          type: string
+          required: false
+          positional: false
+          description: color
+          enum:
+          - Blue
+          - Cyan
+          - Green
+          - Yellow
+          - Red
+          - Pink
+          - Purple
+          - Fuchsia
+          - Rose
+          - Lavender
+          - Sky
+          - Mint
+          - Lemon
+          - Sand
+          - Cocoa
+          - Cream
+          default: Blue
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: note
+          type: string
+          required: false
+          positional: false
+          description: note
+        - name: duration
+          type: int
+          required: false
+          positional: false
+          description: duration
+          default: 1
+        - name: custom-data
+          type: string
+          required: false
+          positional: false
+          description: stored in the marker's customData (JSON encoded) (JSON value as a string)
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      delete-marker:
+        method: POST
+        path: /v1/delete-clip-marker
+        description: delete clip markers by --frame, --custom-data or --color/All
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: frame
+          type: int
+          required: false
+          positional: false
+          description: frame
+        - name: custom-data
+          type: string
+          required: false
+          positional: false
+          description: custom data (JSON value as a string)
+        - name: color
+          type: string
+          required: false
+          positional: false
+          description: color
+          enum:
+          - Blue
+          - Cyan
+          - Green
+          - Yellow
+          - Red
+          - Pink
+          - Purple
+          - Fuchsia
+          - Rose
+          - Lavender
+          - Sky
+          - Mint
+          - Lemon
+          - Sand
+          - Cocoa
+          - Cream
+          - All
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      flag:
+        method: POST
+        path: /v1/clip-flag
+        description: add a flag (--add COLOR) or clear flags (--remove COLOR|All)
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: add
+          type: string
+          required: false
+          positional: false
+          description: add
+          enum:
+          - Blue
+          - Cyan
+          - Green
+          - Yellow
+          - Red
+          - Pink
+          - Purple
+          - Fuchsia
+          - Rose
+          - Lavender
+          - Sky
+          - Mint
+          - Lemon
+          - Sand
+          - Cocoa
+          - Cream
+        - name: remove
+          type: string
+          required: false
+          positional: false
+          description: remove
+          enum:
+          - Blue
+          - Cyan
+          - Green
+          - Yellow
+          - Red
+          - Pink
+          - Purple
+          - Fuchsia
+          - Rose
+          - Lavender
+          - Sky
+          - Mint
+          - Lemon
+          - Sand
+          - Cocoa
+          - Cream
+          - All
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      color:
+        method: POST
+        path: /v1/clip-color
+        description: set the clip color, or 'clear'
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: color
+          type: string
+          required: true
+          positional: false
+          description: color
+          enum:
+          - Orange
+          - Apricot
+          - Yellow
+          - Lime
+          - Olive
+          - Green
+          - Teal
+          - Navy
+          - Blue
+          - Purple
+          - Violet
+          - Pink
+          - Tan
+          - Beige
+          - Brown
+          - Chocolate
+          - clear
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      mark:
+        method: POST
+        path: /v1/clip-mark
+        description: set (--mark-in/--mark-out) or --clear clip mark in/out
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: mark-in
+          type: int
+          required: false
+          positional: false
+          description: mark in
+        - name: mark-out
+          type: int
+          required: false
+          positional: false
+          description: mark out
+        - name: type
+          type: string
+          required: false
+          positional: false
+          description: type
+          enum:
+          - video
+          - audio
+          - all
+        - name: clear
+          type: bool
+          required: false
+          positional: false
+          description: clear
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      proxy:
+        method: POST
+        path: /v1/proxy
+        description: link a proxy (--link PATH), full-res media (--full-res PATH) or --unlink
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: link
+          type: string
+          required: false
+          positional: false
+          description: link
+        - name: full-res
+          type: string
+          required: false
+          positional: false
+          description: full res
+        - name: unlink
+          type: bool
+          required: false
+          positional: false
+          description: unlink
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      replace:
+        method: POST
+        path: /v1/replace-clip
+        description: ReplaceClip / --preserve-subclip
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: path
+        - name: preserve-subclip
+          type: bool
+          required: false
+          positional: false
+          description: preserve subclip
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      monitor-growing:
+        method: POST
+        path: /v1/monitor-growing
+        description: MonitorGrowingFile on a clip
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      set-audio-mapping:
+        method: POST
+        path: /v1/set-audio-mapping
+        description: 21-1 SetAudioMapping from JSON (track_mapping)
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: mapping
+          type: string
+          required: true
+          positional: false
+          description: mapping (JSON value as a string)
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      transcription:
+        method: GET
+        path: /v1/transcription
+        description: 21-1 transcript readback (segments, speakers, word timing)
+        happy_args: --clip=ref_a.mp4
+        params:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: nested
+          type: bool
+          required: false
+          positional: false
+          description: useNestedClipTranscription
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        mutation: false
+        response:
+          type: object
+      ai:
+        method: POST
+        path: /v1/clip-ai
+        description: 'AI pass on a clip or bin: transcribe / clear-transcription / classify-audio / clear-classification /
+          deblur / intellisearch / slate'
+        happy_args: --dry-run
+        body:
+        - name: op
+          type: string
+          required: true
+          positional: false
+          description: op
+          enum:
+          - transcribe
+          - clear-transcription
+          - classify-audio
+          - clear-classification
+          - deblur
+          - intellisearch
+          - slate
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip name, unique id, or file path
+        - name: folder
+          type: string
+          required: false
+          positional: false
+          description: 'bin path: run on the whole bin instead of --clip'
+        - name: speaker-detection
+          type: bool
+          required: false
+          positional: false
+          description: speaker detection
+        - name: faces
+          type: bool
+          required: false
+          positional: false
+          description: faces
+        - name: better
+          type: bool
+          required: false
+          positional: false
+          description: better
+        - name: marker-color
+          type: string
+          required: false
+          positional: false
+          description: marker color
+          enum:
+          - Blue
+          - Cyan
+          - Green
+          - Yellow
+          - Red
+          - Pink
+          - Purple
+          - Fuchsia
+          - Rose
+          - Lavender
+          - Sky
+          - Mint
+          - Lemon
+          - Sand
+          - Cocoa
+          - Cream
+          - None
+        - name: options
+          type: string
+          required: false
+          positional: false
+          description: DeblurOptions JSON (JSON value as a string)
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope the clip lookup to this bin path (A/B)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 180
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+  timeline:
+    description: timelines, tracks, markers, timecode, settings, generators, timeline AI, import/export, build
+    endpoints:
+      list:
+        method: GET
+        path: /v1/timelines
+        description: timelines in the open project
+        params: []
+        mutation: false
+        response:
+          type: object
+      info:
+        method: GET
+        path: /v1/timeline-info
+        description: timeline geometry, rate, resolution, track counts, marks, blanking
+        happy_args: --timeline=_ref_cli_tl
+        params:
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      create:
+        method: POST
+        path: /v1/create-timeline
+        description: CreateEmptyTimeline in the current project
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: timeline name
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      create-from-clips:
+        method: POST
+        path: /v1/create-timeline-from-clips
+        description: 'CreateTimelineFromClips: whole clips (positional refs) or --items JSON [{clip,startFrame,endFrame,recordFrame}]'
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: name
+        - name: clips
+          type: string
+          required: false
+          positional: false
+          description: clip refs (comma-free single value or a JSON array string)
+        - name: batch
+          type: string
+          required: false
+          positional: false
+          description: '[{"clip":..,"startFrame":..,"endFrame":..,"recordFrame":..}] (JSON value as a string)'
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope clip lookups to this bin path
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      duplicate:
+        method: POST
+        path: /v1/duplicate-timeline
+        description: duplicate a timeline under a new name
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: new name
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      delete:
+        method: POST
+        path: /v1/delete-timeline
+        description: delete a timeline by name
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: name
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      switch:
+        method: POST
+        path: /v1/switch-timeline
+        description: make a timeline current (switches the GUI)
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: name
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      rename:
+        method: POST
+        path: /v1/rename-timeline
+        description: rename a timeline
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: name
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      append:
+        method: POST
+        path: /v1/append
+        description: AppendToTimeline with pre-resolved geometry + readback (current timeline only)
+        happy_args: --dry-run
+        body:
+        - name: clip
+          type: string
+          required: false
+          positional: false
+          description: clip ref
+        - name: start-frame
+          type: int
+          required: false
+          positional: false
+          description: start frame
+        - name: end-frame
+          type: int
+          required: false
+          positional: false
+          description: end frame
+        - name: record-frame
+          type: int
+          required: false
+          positional: false
+          description: record frame
+        - name: track-index
+          type: int
+          required: false
+          positional: false
+          description: destination track index
+        - name: media-type
+          type: string
+          required: false
+          positional: false
+          description: media type
+          enum:
+          - video
+          - audio
+        - name: batch
+          type: string
+          required: false
+          positional: false
+          description: '[{"clip":..,"startFrame":..,"endFrame":..,"recordFrame":..,"trackIndex":..,"mediaType":1|2}] (JSON
+            value as a string)'
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope clip lookups to this bin path
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      export:
+        method: POST
+        path: /v1/export-timeline
+        description: Timeline.Export to AAF/DRT/EDL/FCPXML/OTIO/CSV/ALE/
+        happy_args: --dry-run
+        body:
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: path
+        - name: type
+          type: string
+          required: true
+          positional: false
+          description: type
+          enum:
+          - aaf
+          - drt
+          - edl
+          - fcp7xml
+          - fcpxml
+          - fcpxml_1_8
+          - fcpxml_1_9
+          - fcpxml_1_10
+          - hdr10_a
+          - hdr10_b
+          - csv
+          - tab
+          - dolby_2_9
+          - dolby_4_0
+          - dolby_5_1
+          - otio
+          - ale
+          - ale_cdl
+        - name: subtype
+          type: string
+          required: false
+          positional: false
+          description: 'AAF: aaf_new|aaf_existing; EDL: cdl|sdl|missing_clips|none'
+          enum:
+          - none
+          - aaf_new
+          - aaf_existing
+          - cdl
+          - sdl
+          - missing_clips
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      import:
+        method: POST
+        path: /v1/import-timeline
+        description: ImportTimelineFromFile (new timeline) or --into (AAF into the current timeline)
+        happy_args: --dry-run
+        body:
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: path
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: timelineName
+        - name: source-clips-path
+          type: string
+          required: false
+          positional: false
+          description: source clips path
+        - name: no-import-source-clips
+          type: bool
+          required: false
+          positional: false
+          description: no import source clips
+        - name: into
+          type: bool
+          required: false
+          positional: false
+          description: into
+        - name: options
+          type: string
+          required: false
+          positional: false
+          description: extra ImportOptions / AAFImportOptions JSON (JSON value as a string)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 90
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      tracks:
+        method: GET
+        path: /v1/tracks
+        description: tracks with name, enabled, locked, subtype, item count, voice isolation
+        happy_args: --timeline=_ref_cli_tl
+        params:
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      add-track:
+        method: POST
+        path: /v1/add-track
+        description: 'AddTrack video/audio/subtitle (audio: --subtype mono|stereo|5.1|)'
+        happy_args: --dry-run
+        body:
+        - name: type
+          type: string
+          required: true
+          positional: false
+          description: type
+          enum:
+          - video
+          - audio
+          - subtitle
+        - name: subtype
+          type: string
+          required: false
+          positional: false
+          description: subtype
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      delete-track:
+        method: POST
+        path: /v1/delete-track
+        description: DeleteTrack
+        happy_args: --dry-run
+        body:
+        - name: track
+          type: string
+          required: true
+          positional: false
+          description: V2 / A1
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      set-track:
+        method: POST
+        path: /v1/set-track
+        description: rename / enable / lock / voice-isolate a track
+        happy_args: --dry-run
+        body:
+        - name: track
+          type: string
+          required: true
+          positional: false
+          description: V2 / A1
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: enable
+          type: string
+          required: false
+          positional: false
+          description: enable
+          enum:
+          - 'true'
+          - 'false'
+        - name: lock
+          type: string
+          required: false
+          positional: false
+          description: lock
+          enum:
+          - 'true'
+          - 'false'
+        - name: voice-isolation
+          type: string
+          required: false
+          positional: false
+          description: voice isolation
+          enum:
+          - 'true'
+          - 'false'
+        - name: voice-isolation-amount
+          type: int
+          required: false
+          positional: false
+          description: voice isolation amount
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      markers:
+        method: GET
+        path: /v1/timeline-markers
+        description: timeline markers (frames relative to start)
+        happy_args: --timeline=_ref_cli_tl
+        params:
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      add-marker:
+        method: POST
+        path: /v1/add-marker
+        description: add a timeline marker (or --item for a clip-relative item marker)
+        happy_args: --frame=12;--color=Blue;--name=dogfood;--custom-data={"by":"dogfood"};--timeline=_ref_cli_tl;--yes
+        body:
+        - name: frame
+          type: int
+          required: true
+          positional: false
+          description: frame
+        - name: color
+          type: string
+          required: false
+          positional: false
+          description: color
+          enum:
+          - Blue
+          - Cyan
+          - Green
+          - Yellow
+          - Red
+          - Pink
+          - Purple
+          - Fuchsia
+          - Rose
+          - Lavender
+          - Sky
+          - Mint
+          - Lemon
+          - Sand
+          - Cocoa
+          - Cream
+          default: Blue
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: note
+          type: string
+          required: false
+          positional: false
+          description: note
+        - name: duration
+          type: int
+          required: false
+          positional: false
+          description: duration
+          default: 1
+        - name: custom-data
+          type: string
+          required: false
+          positional: false
+          description: custom data (JSON value as a string)
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'' (track:position), unique id, or name'
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      delete-marker:
+        method: POST
+        path: /v1/delete-marker
+        description: delete timeline/item markers by --frame, --custom-data or --color/All
+        happy_args: --custom-data={"by":"dogfood"};--timeline=_ref_cli_tl;--yes
+        body:
+        - name: frame
+          type: int
+          required: false
+          positional: false
+          description: frame
+        - name: custom-data
+          type: string
+          required: false
+          positional: false
+          description: custom data (JSON value as a string)
+        - name: color
+          type: string
+          required: false
+          positional: false
+          description: color
+          enum:
+          - Blue
+          - Cyan
+          - Green
+          - Yellow
+          - Red
+          - Pink
+          - Purple
+          - Fuchsia
+          - Rose
+          - Lavender
+          - Sky
+          - Mint
+          - Lemon
+          - Sand
+          - Cocoa
+          - Cream
+          - All
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'' (track:position), unique id, or name'
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      timecode:
+        method: GET
+        path: /v1/timecode
+        description: playhead + start timecode + frame range
+        happy_args: --timeline=_ref_cli_tl
+        params:
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      set-timecode:
+        method: POST
+        path: /v1/set-timecode
+        description: move the playhead (--playhead TC) / set start TC (--start TC)
+        happy_args: --playhead=01:00:00:12;--timeline=_ref_cli_tl;--yes
+        body:
+        - name: playhead
+          type: string
+          required: false
+          positional: false
+          description: playhead
+        - name: start
+          type: string
+          required: false
+          positional: false
+          description: start
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      mark:
+        method: POST
+        path: /v1/timeline-mark
+        description: set (--mark-in/--mark-out) or --clear timeline mark in/out
+        happy_args: --clear;--timeline=_ref_cli_tl;--yes
+        body:
+        - name: mark-in
+          type: int
+          required: false
+          positional: false
+          description: mark in
+        - name: mark-out
+          type: int
+          required: false
+          positional: false
+          description: mark out
+        - name: type
+          type: string
+          required: false
+          positional: false
+          description: type
+          enum:
+          - video
+          - audio
+          - all
+        - name: clear
+          type: bool
+          required: false
+          positional: false
+          description: clear
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      settings:
+        method: GET
+        path: /v1/timeline-settings
+        description: timeline settings (project settings unless useCustomSettings=1)
+        happy_args: --timeline=_ref_cli_tl
+        params:
+        - name: key
+          type: string
+          required: false
+          positional: false
+          description: key
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      set-settings:
+        method: POST
+        path: /v1/set-timeline-settings
+        description: set timeline settings from JSON; useCustomSettings applied first; frame rate is fixed at creation
+        happy_args: --dry-run
+        body:
+        - name: settings
+          type: string
+          required: true
+          positional: false
+          description: settings (JSON value as a string)
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      set-blanking:
+        method: POST
+        path: /v1/set-blanking
+        description: 21-1 timeline output blanking (pixels)
+        happy_args: --dry-run
+        body:
+        - name: top
+          type: int
+          required: false
+          positional: false
+          description: top
+        - name: bottom
+          type: int
+          required: false
+          positional: false
+          description: bottom
+        - name: left
+          type: int
+          required: false
+          positional: false
+          description: left
+        - name: right
+          type: int
+          required: false
+          positional: false
+          description: right
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      insert-generator:
+        method: POST
+        path: /v1/insert-generator
+        description: insert a generator / fusion-generator / ofx-generator / title / fusion-title / fusion-composition at
+          the playhead
+        happy_args: --dry-run
+        body:
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: '''Solid Color'', ''Text+'', ...'
+        - name: kind
+          type: string
+          required: false
+          positional: false
+          description: kind
+          enum:
+          - generator
+          - fusion-generator
+          - ofx-generator
+          - title
+          - fusion-title
+          - fusion-composition
+        - name: at
+          type: string
+          required: false
+          positional: false
+          description: timecode to move the playhead to first
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      compound-clip:
+        method: POST
+        path: /v1/compound-clip
+        description: CreateCompoundClip from items
+        happy_args: --dry-run
+        body:
+        - name: items
+          type: string
+          required: true
+          positional: false
+          description: items (comma-free single value or a JSON array string)
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: start-timecode
+          type: string
+          required: false
+          positional: false
+          description: start timecode
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      fusion-clip:
+        method: POST
+        path: /v1/fusion-clip
+        description: CreateFusionClip from items
+        happy_args: --dry-run
+        body:
+        - name: items
+          type: string
+          required: true
+          positional: false
+          description: items (comma-free single value or a JSON array string)
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      grab-still:
+        method: POST
+        path: /v1/grab-still
+        description: GrabStill at the playhead, or --all first|middle for every clip
+        happy_args: --dry-run
+        body:
+        - name: all
+          type: string
+          required: false
+          positional: false
+          description: all
+          enum:
+          - first
+          - middle
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      normalize-modes:
+        method: GET
+        path: /v1/normalize-modes
+        description: 21-1 GetNormalizeAudioModes
+        happy_args: --timeline=_ref_cli_tl
+        params:
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      ai:
+        method: POST
+        path: /v1/timeline-ai
+        description: subtitles / scene-cuts / stereo / dolby-vision / normalize (21-1) / auto-align (21-1)
+        happy_args: --dry-run
+        body:
+        - name: op
+          type: string
+          required: true
+          positional: false
+          description: op
+          enum:
+          - subtitles
+          - scene-cuts
+          - stereo
+          - dolby-vision
+          - normalize
+          - auto-align
+        - name: language
+          type: string
+          required: false
+          positional: false
+          description: language
+          enum:
+          - auto
+          - english
+          - spanish
+          - french
+          - german
+          - italian
+          - portuguese
+          - japanese
+          - korean
+          - mandarin
+        - name: preset
+          type: string
+          required: false
+          positional: false
+          description: preset
+          enum:
+          - default
+          - teletext
+          - netflix
+        - name: chars-per-line
+          type: int
+          required: false
+          positional: false
+          description: chars per line
+        - name: line-break
+          type: string
+          required: false
+          positional: false
+          description: line break
+          enum:
+          - single
+          - double
+        - name: gap
+          type: int
+          required: false
+          positional: false
+          description: gap
+        - name: items
+          type: string
+          required: false
+          positional: false
+          description: timeline item refs (comma-free single value or a JSON array string)
+        - name: mode
+          type: string
+          required: false
+          positional: false
+          description: 'normalize: mode name from normalize-modes; auto-align: waveform|timecode'
+        - name: target-level
+          type: float
+          required: false
+          positional: false
+          description: target level
+        - name: target-loudness
+          type: float
+          required: false
+          positional: false
+          description: target loudness
+        - name: independent
+          type: bool
+          required: false
+          positional: false
+          description: independent
+        - name: options
+          type: string
+          required: false
+          positional: false
+          description: options (JSON value as a string)
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 180
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      export-spec:
+        method: GET
+        path: /v1/export-spec
+        description: serialize a timeline to edit-spec JSON
+        happy_args: --timeline=_ref_cli_tl
+        params:
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: named timeline
+        mutation: false
+        response:
+          type: object
+      clips:
+        method: GET
+        path: /v1/clips
+        description: items per track of a timeline
+        happy_args: --timeline=_ref_cli_tl
+        params:
+        - name: audio
+          type: bool
+          required: false
+          positional: false
+          description: include audio tracks
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: named timeline (never switches the GUI)
+        mutation: false
+        response:
+          type: object
+      build:
+        method: POST
+        path: /v1/build
+        description: edit-spec -> media pool + new timeline with readback
+        happy_args: --dry-run
+        body:
+        - name: spec
+          type: string
+          required: true
+          positional: false
+          description: edit-spec JSON (schema 1.0.0)
+        - name: fps
+          type: string
+          required: false
+          positional: false
+          description: Resolve frame-rate string, e.g. 29.97
+        - name: lut
+          type: string
+          required: false
+          positional: false
+          description: grade NAME=PATH mappings (comma-free single value or a JSON array string)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 180
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+  item:
+    description: 'timeline items: properties, speed, fades, transitions, multicam, Fusion comps'
+    endpoints:
+      list:
+        method: GET
+        path: /v1/items
+        description: every timeline item with ref (V1:3), type, geometry, source range, clip
+        happy_args: --timeline=_ref_cli_tl
+        params:
+        - name: type
+          type: string
+          required: false
+          positional: false
+          description: type
+          enum:
+          - video
+          - audio
+          - subtitle
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      info:
+        method: GET
+        path: /v1/item-info
+        description: 'one item: properties, speed, fades, blanking, markers, comps, version, caches'
+        happy_args: --item=V1:2;--timeline=_ref_cli_tl
+        params:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'' (track:position), unique id, or name'
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      delete:
+        method: POST
+        path: /v1/delete-items
+        description: DeleteClips on items (--ripple closes the gap)
+        happy_args: --dry-run
+        body:
+        - name: items
+          type: string
+          required: true
+          positional: false
+          description: items (comma-free single value or a JSON array string)
+        - name: ripple
+          type: bool
+          required: false
+          positional: false
+          description: ripple
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      link:
+        method: POST
+        path: /v1/link-items
+        description: SetClipsLinked (or --unlink)
+        happy_args: --dry-run
+        body:
+        - name: items
+          type: string
+          required: true
+          positional: false
+          description: items (comma-free single value or a JSON array string)
+        - name: unlink
+          type: bool
+          required: false
+          positional: false
+          description: unlink
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      set:
+        method: POST
+        path: /v1/set-item
+        description: 'per-item edits: name, enabled, color, flags, speed (21-1), fades (21-1), blanking, caches, audio mapping,
+          voice isolation'
+        happy_args: --dry-run
+        body:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'' (track:position), unique id, or name'
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: enabled
+          type: string
+          required: false
+          positional: false
+          description: enabled
+          enum:
+          - 'true'
+          - 'false'
+        - name: color
+          type: string
+          required: false
+          positional: false
+          description: color
+          enum:
+          - Orange
+          - Apricot
+          - Yellow
+          - Lime
+          - Olive
+          - Green
+          - Teal
+          - Navy
+          - Blue
+          - Purple
+          - Violet
+          - Pink
+          - Tan
+          - Beige
+          - Brown
+          - Chocolate
+          - clear
+        - name: add-flag
+          type: string
+          required: false
+          positional: false
+          description: add flag
+          enum:
+          - Blue
+          - Cyan
+          - Green
+          - Yellow
+          - Red
+          - Pink
+          - Purple
+          - Fuchsia
+          - Rose
+          - Lavender
+          - Sky
+          - Mint
+          - Lemon
+          - Sand
+          - Cocoa
+          - Cream
+        - name: remove-flag
+          type: string
+          required: false
+          positional: false
+          description: remove flag
+          enum:
+          - Blue
+          - Cyan
+          - Green
+          - Yellow
+          - Red
+          - Pink
+          - Purple
+          - Fuchsia
+          - Rose
+          - Lavender
+          - Sky
+          - Mint
+          - Lemon
+          - Sand
+          - Cocoa
+          - Cream
+          - All
+        - name: speed
+          type: string
+          required: false
+          positional: false
+          description: percentage number, or {"Percentage":50,"RippleTimeline":true,...} (JSON value as a string)
+        - name: fade-in
+          type: int
+          required: false
+          positional: false
+          description: frames
+        - name: fade-out
+          type: int
+          required: false
+          positional: false
+          description: frames
+        - name: blanking
+          type: string
+          required: false
+          positional: false
+          description: '{"Top":0,"Bottom":0,"Left":0,"Right":0} (JSON value as a string)'
+        - name: use-timeline-blanking
+          type: string
+          required: false
+          positional: false
+          description: use timeline blanking
+          enum:
+          - 'true'
+          - 'false'
+        - name: color-cache
+          type: string
+          required: false
+          positional: false
+          description: color cache
+          enum:
+          - 'true'
+          - 'false'
+        - name: fusion-cache
+          type: string
+          required: false
+          positional: false
+          description: CACHE_AUTO_ENABLED|CACHE_DISABLED|CACHE_ENABLED value
+        - name: audio-mapping
+          type: string
+          required: false
+          positional: false
+          description: SetSourceAudioChannelMapping JSON (exactly 1 track) (JSON value as a string)
+        - name: voice-isolation
+          type: string
+          required: false
+          positional: false
+          description: voice isolation
+          enum:
+          - 'true'
+          - 'false'
+        - name: voice-isolation-amount
+          type: int
+          required: false
+          positional: false
+          description: voice isolation amount
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      set-properties:
+        method: POST
+        path: /v1/set-item-properties
+        description: TimelineItemProperties (Pan/Tilt/Zoom/Crop/Opacity/CompositeMode/audio) -- STATIC values, no keyframes
+        happy_args: --item=V1:2;--timeline=_ref_cli_tl;--properties={"Opacity":100.0};--yes
+        body:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'' (track:position), unique id, or name'
+        - name: properties
+          type: string
+          required: true
+          positional: false
+          description: properties (JSON value as a string)
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      add-transition:
+        method: POST
+        path: /v1/add-transition
+        description: '21-1 AddTransition on an item edge (consumes media handles: ''right'' needs the outgoing clip''s tail
+          handle, ''left''/''center'' also the incoming clip''s head handle; give position + alignment + duration)'
+        happy_args: --dry-run
+        body:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'' (track:position), unique id, or name'
+        - name: type
+          type: string
+          required: false
+          positional: false
+          description: e.g. 'Cross Dissolve' (default), 'Dip To Color Dissolve'
+        - name: category
+          type: string
+          required: false
+          positional: false
+          description: category
+          enum:
+          - simple
+          - fusion
+          - ofx
+          - audio
+        - name: position
+          type: string
+          required: false
+          positional: false
+          description: position
+          enum:
+          - start
+          - end
+        - name: alignment
+          type: string
+          required: false
+          positional: false
+          description: alignment
+          enum:
+          - left
+          - center
+          - right
+        - name: duration
+          type: int
+          required: false
+          positional: false
+          description: frames
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      multicam:
+        method: POST
+        path: /v1/multicam
+        description: '21-1 multicam: create (from clips) / flatten / smart-switch (on an item)'
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - create
+          - flatten
+          - smart-switch
+        - name: clips
+          type: string
+          required: false
+          positional: false
+          description: pool clip refs (create) (comma-free single value or a JSON array string)
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: multicam clip name (create)
+        - name: sync
+          type: string
+          required: false
+          positional: false
+          description: sync
+          enum:
+          - timecode
+          - audio
+          - in
+          - out
+          - marker
+        - name: source-bin
+          type: bool
+          required: false
+          positional: false
+          description: 'createBinForSourceClips (default OFF: a moved-source multicam cannot be appended until another is
+            created)'
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'' (track:position), unique id, or name'
+        - name: grade
+          type: string
+          required: false
+          positional: false
+          description: flatten grade source
+          enum:
+          - copy
+          - retain
+        - name: analysis
+          type: string
+          required: false
+          positional: false
+          description: smart-switch analysisMode (default audio)
+          enum:
+          - none
+          - wide-angle
+          - audio
+        - name: options
+          type: string
+          required: false
+          positional: false
+          description: MulticamOptions / SmartSwitchSettings JSON (JSON value as a string)
+        - name: bin
+          type: string
+          required: false
+          positional: false
+          description: scope clip lookups to this bin path
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      fusion-comps:
+        method: GET
+        path: /v1/fusion-comps
+        description: Fusion comps on an item (count + names)
+        happy_args: --item=V1:1;--timeline=_ref_cli_tl
+        params:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'' (track:position), unique id, or name'
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      fusion-comp:
+        method: POST
+        path: /v1/item-fusion
+        description: 'Fusion comps on an item: add / import / export / delete / load / rename'
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - add
+          - import
+          - export
+          - delete
+          - load
+          - rename
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'' (track:position), unique id, or name'
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: new-name
+          type: string
+          required: false
+          positional: false
+          description: new name
+        - name: path
+          type: string
+          required: false
+          positional: false
+          description: path
+        - name: index
+          type: int
+          required: false
+          positional: false
+          description: comp index for export (1)
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+  color:
+    description: grade versions, LUT/CDL/DRX, node graph, color groups, gallery
+    endpoints:
+      info:
+        method: GET
+        path: /v1/color-info
+        description: grade versions, group and node graph (labels, LUT per node, tools) of an item -- no lift/gamma/gain readback
+          exists
+        happy_args: --item=V1:2;--timeline=_ref_cli_tl
+        params:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'', unique id, or name'
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      timeline-graph:
+        method: GET
+        path: /v1/timeline-graph
+        description: timeline-level node graph
+        happy_args: --timeline=_ref_cli_tl
+        params:
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      version:
+        method: POST
+        path: /v1/color-version
+        description: add / delete / load / rename a grade version (local or remote)
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - add
+          - delete
+          - load
+          - rename
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: name
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'', unique id, or name'
+        - name: new-name
+          type: string
+          required: false
+          positional: false
+          description: new name
+        - name: type
+          type: string
+          required: false
+          positional: false
+          description: type
+          enum:
+          - local
+          - remote
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      apply-lut:
+        method: POST
+        path: /v1/apply-lut
+        description: 'Graph.SetLUT on a node of each item (LUT must be discovered: refresh-luts)'
+        happy_args: --dry-run
+        body:
+        - name: items
+          type: string
+          required: true
+          positional: false
+          description: timeline item refs (comma-free single value or a JSON array string)
+        - name: lut
+          type: string
+          required: true
+          positional: false
+          description: path under the LUT folder, or absolute
+        - name: node
+          type: int
+          required: false
+          positional: false
+          description: node
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      apply-cdl:
+        method: POST
+        path: /v1/apply-cdl
+        description: 'SetCDL on a node: --slope ''r g b'' --offset ''r g b'' --power ''r g b'' --saturation s'
+        happy_args: --dry-run
+        body:
+        - name: items
+          type: string
+          required: true
+          positional: false
+          description: timeline item refs (comma-free single value or a JSON array string)
+        - name: node
+          type: int
+          required: false
+          positional: false
+          description: node
+        - name: slope
+          type: string
+          required: false
+          positional: false
+          description: slope
+        - name: offset
+          type: string
+          required: false
+          positional: false
+          description: offset
+        - name: power
+          type: string
+          required: false
+          positional: false
+          description: power
+        - name: saturation
+          type: float
+          required: false
+          positional: false
+          description: saturation
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      apply-drx:
+        method: POST
+        path: /v1/apply-drx
+        description: ApplyGradeFromDRX (REPLACES the node graph); --mode none|source|start
+        happy_args: --dry-run
+        body:
+        - name: items
+          type: string
+          required: true
+          positional: false
+          description: timeline item refs (comma-free single value or a JSON array string)
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: path
+        - name: mode
+          type: string
+          required: false
+          positional: false
+          description: mode
+          enum:
+          - none
+          - source
+          - start
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      copy-grade:
+        method: POST
+        path: /v1/copy-grade
+        description: CopyGrades from --source item to items
+        happy_args: --dry-run
+        body:
+        - name: items
+          type: string
+          required: true
+          positional: false
+          description: timeline item refs (comma-free single value or a JSON array string)
+        - name: source
+          type: string
+          required: true
+          positional: false
+          description: source item ref
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      set-node:
+        method: POST
+        path: /v1/set-node
+        description: node enable/cache, ResetAllGrades, ResetAllNodeColors, ApplyArriCdlLut
+        happy_args: --dry-run
+        body:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'', unique id, or name'
+        - name: node
+          type: int
+          required: false
+          positional: false
+          description: node
+        - name: enabled
+          type: string
+          required: false
+          positional: false
+          description: enabled
+          enum:
+          - 'true'
+          - 'false'
+        - name: cache
+          type: string
+          required: false
+          positional: false
+          description: cache
+          enum:
+          - auto
+          - 'off'
+          - 'on'
+        - name: reset-all
+          type: bool
+          required: false
+          positional: false
+          description: reset all
+        - name: reset-colors
+          type: bool
+          required: false
+          positional: false
+          description: reset colors
+        - name: arri-cdl
+          type: bool
+          required: false
+          positional: false
+          description: arri cdl
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      export-lut:
+        method: POST
+        path: /v1/export-lut
+        description: ExportLUT of an item's grade (--cube 17|33|65|vlut)
+        happy_args: --dry-run
+        body:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'', unique id, or name'
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: path
+        - name: cube
+          type: string
+          required: false
+          positional: false
+          description: cube
+          enum:
+          - '17'
+          - '33'
+          - '65'
+          - vlut
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      refresh-luts:
+        method: POST
+        path: /v1/refresh-luts
+        description: RefreshLUTList after copying a .cube into the LUT folder
+        happy_args: --yes
+        body:
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      groups:
+        method: GET
+        path: /v1/color-groups
+        description: color groups with their clips (current timeline) and node counts
+        params: []
+        mutation: false
+        response:
+          type: object
+      group:
+        method: POST
+        path: /v1/color-group
+        description: create / delete / rename / assign / remove a color group
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - create
+          - delete
+          - rename
+          - assign
+          - remove
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: name
+        - name: new-name
+          type: string
+          required: false
+          positional: false
+          description: new name
+        - name: items
+          type: string
+          required: false
+          positional: false
+          description: item refs (assign/remove) (comma-free single value or a JSON array string)
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      gallery:
+        method: GET
+        path: /v1/gallery
+        description: gallery still and PowerGrade albums with still counts
+        params: []
+        mutation: false
+        response:
+          type: object
+      gallery-album:
+        method: POST
+        path: /v1/gallery-album
+        description: create / create-powergrade / set-current / rename / import (--paths) / export (--path --prefix --format)
+          / delete-stills
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - create
+          - create-powergrade
+          - set-current
+          - rename
+          - import
+          - export
+          - delete-stills
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: new-name
+          type: string
+          required: false
+          positional: false
+          description: new name
+        - name: paths
+          type: string
+          required: false
+          positional: false
+          description: still files to import (comma-free single value or a JSON array string)
+        - name: path
+          type: string
+          required: false
+          positional: false
+          description: export folder
+        - name: prefix
+          type: string
+          required: false
+          positional: false
+          description: prefix
+        - name: format
+          type: string
+          required: false
+          positional: false
+          description: format
+          enum:
+          - dpx
+          - cin
+          - tif
+          - jpg
+          - png
+          - ppm
+          - bmp
+          - xpm
+          - drx
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+  fusion:
+    description: Fusion tool scripting on an item's comp (Lock/Undo wrapped) and the Text+ shortcut
+    endpoints:
+      tools:
+        method: GET
+        path: /v1/fusion-tools
+        description: tools in an item's Fusion comp (+ input values with --inputs / --all-inputs)
+        happy_args: --item=V1:1;--timeline=_ref_cli_tl;--regid=TextPlus
+        params:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'', unique id, or name'
+        - name: comp
+          type: int
+          required: false
+          positional: false
+          description: Fusion comp index on the item (default 1)
+        - name: regid
+          type: string
+          required: false
+          positional: false
+          description: filter by RegID, e.g. TextPlus
+        - name: read-inputs
+          type: string
+          required: false
+          positional: false
+          description: input ids to read on each tool (comma-free single value or a JSON array string)
+        - name: all-inputs
+          type: bool
+          required: false
+          positional: false
+          description: all inputs
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        mutation: false
+        response:
+          type: object
+      set:
+        method: POST
+        path: /v1/fusion-set
+        description: SetInput values on a tool (Lock/StartUndo wrapped) with readback
+        happy_args: --dry-run
+        body:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'', unique id, or name'
+        - name: comp
+          type: int
+          required: false
+          positional: false
+          description: Fusion comp index on the item (default 1)
+        - name: tool
+          type: string
+          required: true
+          positional: false
+          description: tool name or RegID
+        - name: inputs
+          type: string
+          required: true
+          positional: false
+          description: '{"StyledText": "...", "Size": 0.1, "Center": [0.5, 0.7]} (JSON value as a string)'
+        - name: time
+          type: int
+          required: false
+          positional: false
+          description: comp-local frame for an animated input
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      keyframes:
+        method: POST
+        path: /v1/fusion-keyframes
+        description: 'BezierSpline keyframes on one input (--keys {frame: value}) or --clear'
+        happy_args: --dry-run
+        body:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'', unique id, or name'
+        - name: comp
+          type: int
+          required: false
+          positional: false
+          description: Fusion comp index on the item (default 1)
+        - name: tool
+          type: string
+          required: true
+          positional: false
+          description: tool
+        - name: input
+          type: string
+          required: true
+          positional: false
+          description: input
+        - name: keys
+          type: string
+          required: true
+          positional: false
+          description: keys (JSON value as a string)
+        - name: clear
+          type: bool
+          required: false
+          positional: false
+          description: clear
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      tool:
+        method: POST
+        path: /v1/fusion-tool
+        description: add / delete / bypass / unbypass a tool in the comp
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - add
+          - delete
+          - bypass
+          - unbypass
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'', unique id, or name'
+        - name: comp
+          type: int
+          required: false
+          positional: false
+          description: Fusion comp index on the item (default 1)
+        - name: tool
+          type: string
+          required: false
+          positional: false
+          description: existing tool (delete/bypass)
+        - name: regid
+          type: string
+          required: false
+          positional: false
+          description: RegID to add
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: TOOLS_Name for the new tool
+        - name: connect-from
+          type: string
+          required: false
+          positional: false
+          description: tool feeding the new tool
+        - name: input
+          type: string
+          required: false
+          positional: false
+          description: input id on the new tool (default Input)
+        - name: connect-to
+          type: string
+          required: false
+          positional: false
+          description: tool the new tool feeds
+        - name: to-input
+          type: string
+          required: false
+          positional: false
+          description: input id on --connect-to (default Input)
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      set-title:
+        method: POST
+        path: /v1/set-title
+        description: 'Text+ shortcut: --text --font --style --size --color r,g,b --center x,y --outline w'
+        happy_args: --item=V1:1;--timeline=_ref_cli_tl;--text=dogfood;--yes
+        body:
+        - name: item
+          type: string
+          required: false
+          positional: false
+          description: 'timeline item: ''V1:3'', unique id, or name'
+        - name: comp
+          type: int
+          required: false
+          positional: false
+          description: Fusion comp index on the item (default 1)
+        - name: text
+          type: string
+          required: false
+          positional: false
+          description: text
+        - name: font
+          type: string
+          required: false
+          positional: false
+          description: font
+        - name: style
+          type: string
+          required: false
+          positional: false
+          description: style
+        - name: size
+          type: float
+          required: false
+          positional: false
+          description: size
+        - name: color
+          type: string
+          required: false
+          positional: false
+          description: color
+        - name: center
+          type: string
+          required: false
+          positional: false
+          description: center
+        - name: h-justify
+          type: int
+          required: false
+          positional: false
+          description: h justify
+        - name: v-justify
+          type: int
+          required: false
+          positional: false
+          description: v justify
+        - name: outline
+          type: float
+          required: false
+          positional: false
+          description: outline
+        - name: inputs
+          type: string
+          required: false
+          positional: false
+          description: extra input id -> value (JSON value as a string)
+        - name: timeline
+          type: string
+          required: false
+          positional: false
+          description: 'named timeline (never switches the GUI); default: current'
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+  render:
+    description: render formats, settings, presets, job queue, quick export, verify-by-file
+    endpoints:
+      presets:
+        method: GET
+        path: /v1/render-presets
+        description: render preset names
+        params: []
+        mutation: false
+        response:
+          type: object
+      queue:
+        method: GET
+        path: /v1/render-status
+        description: the render queue
+        params: []
+        mutation: false
+        response:
+          type: object
+      formats:
+        method: GET
+        path: /v1/render-formats
+        description: render formats, codecs (desc -> ID) for --format, audio formats/codecs (21-1), resolutions, current selection
+        happy_args: --format=mp4
+        params:
+        - name: format
+          type: string
+          required: false
+          positional: false
+          description: format extension, e.g. mp4
+        - name: codec
+          type: string
+          required: false
+          positional: false
+          description: codec id for resolutions
+        mutation: false
+        response:
+          type: object
+      set-format:
+        method: POST
+        path: /v1/set-render-format
+        description: SetCurrentRenderFormatAndCodec (extension + codec ID)
+        happy_args: --dry-run
+        body:
+        - name: format
+          type: string
+          required: true
+          positional: false
+          description: format
+        - name: codec
+          type: string
+          required: true
+          positional: false
+          description: codec
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      set-mode:
+        method: POST
+        path: /v1/set-render-mode
+        description: 'render mode: single (one file) or individual (per clip)'
+        happy_args: --mode=single;--yes
+        body:
+        - name: mode
+          type: string
+          required: true
+          positional: false
+          description: mode
+          enum:
+          - single
+          - individual
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      set-settings:
+        method: POST
+        path: /v1/set-render-settings
+        description: SetRenderSettings one key per call with per-key result (no readback exists; verify by file)
+        happy_args: --dry-run
+        body:
+        - name: settings
+          type: string
+          required: true
+          positional: false
+          description: settings (JSON value as a string)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      preset:
+        method: POST
+        path: /v1/render-preset
+        description: load / save / update / delete / export / import / quick-export-on / quick-export-off a render preset
+        happy_args: --dry-run
+        body:
+        - name: action
+          type: string
+          required: true
+          positional: false
+          description: action
+          enum:
+          - load
+          - save
+          - update
+          - delete
+          - export
+          - import
+          - quick-export-on
+          - quick-export-off
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: name
+        - name: path
+          type: string
+          required: false
+          positional: false
+          description: path
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      jobs:
+        method: GET
+        path: /v1/render-jobs
+        description: render queue with normalized per-job status
+        params: []
+        mutation: false
+        response:
+          type: object
+      job-status:
+        method: GET
+        path: /v1/render-job-status
+        description: one job's status (error strings normalized to Failed)
+        happy_args: --job=example;--dry-run
+        params:
+        - name: job
+          type: string
+          required: true
+          positional: false
+          description: job
+        mutation: false
+        response:
+          type: object
+      add-job:
+        method: POST
+        path: /v1/add-render-job
+        description: configure (--preset / --format+--codec / --settings / --out / --name) and AddRenderJob with retry
+        happy_args: --dry-run
+        body:
+        - name: preset
+          type: string
+          required: false
+          positional: false
+          description: preset
+        - name: format
+          type: string
+          required: false
+          positional: false
+          description: format
+        - name: codec
+          type: string
+          required: false
+          positional: false
+          description: codec
+        - name: settings
+          type: string
+          required: false
+          positional: false
+          description: settings (JSON value as a string)
+        - name: out
+          type: string
+          required: false
+          positional: false
+          description: out
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: name
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      delete-job:
+        method: POST
+        path: /v1/delete-render-job
+        description: DeleteRenderJob JOB or --all
+        happy_args: --dry-run
+        body:
+        - name: job
+          type: string
+          required: false
+          positional: false
+          description: job
+        - name: all
+          type: bool
+          required: false
+          positional: false
+          description: all
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      start:
+        method: POST
+        path: /v1/start-render
+        description: StartRendering jobs (or all); --wait polls to completion
+        happy_args: --dry-run
+        body:
+        - name: jobs
+          type: string
+          required: false
+          positional: false
+          description: 'job ids (default: all) (comma-free single value or a JSON array string)'
+        - name: wait
+          type: bool
+          required: false
+          positional: false
+          description: wait
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 120
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      stop:
+        method: POST
+        path: /v1/stop-render
+        description: StopRendering
+        happy_args: --dry-run
+        body:
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      quick-export-presets:
+        method: GET
+        path: /v1/quick-export-presets
+        description: Quick Export preset names
+        params: []
+        mutation: false
+        response:
+          type: object
+      quick-export:
+        method: POST
+        path: /v1/quick-export
+        description: RenderWithQuickExport of the current timeline (EnableUpload always off)
+        happy_args: --dry-run
+        body:
+        - name: preset
+          type: string
+          required: true
+          positional: false
+          description: preset
+        - name: out
+          type: string
+          required: true
+          positional: false
+          description: out
+        - name: name
+          type: string
+          required: true
+          positional: false
+          description: name
+        - name: quality
+          type: int
+          required: false
+          positional: false
+          description: VideoQuality bit rate limit (0 auto)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 120
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      verify:
+        method: GET
+        path: /v1/verify-render
+        description: ffprobe an output file (codec/size/fps/duration/audio) and check expectations -- the only render readback
+        happy_args: --path=C:/Renders/ref_render.mp4
+        params:
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: path
+        - name: codec
+          type: string
+          required: false
+          positional: false
+          description: codec
+        - name: width
+          type: int
+          required: false
+          positional: false
+          description: width
+        - name: height
+          type: int
+          required: false
+          positional: false
+          description: height
+        - name: fps
+          type: float
+          required: false
+          positional: false
+          description: fps
+        - name: audio
+          type: bool
+          required: false
+          positional: false
+          description: require an audio stream
+        - name: min-duration
+          type: float
+          required: false
+          positional: false
+          description: min duration
+        mutation: false
+        response:
+          type: object
+      render:
+        method: POST
+        path: /v1/render
+        description: render the current timeline (mp4/H264) with every guard
+        happy_args: --dry-run
+        body:
+        - name: out
+          type: string
+          required: false
+          positional: false
+          description: output directory (default <system temp>/_pp_smoke)
+        - name: name
+          type: string
+          required: false
+          positional: false
+          description: output stem (default pp_render)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 180
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      smoke:
+        method: POST
+        path: /v1/smoke
+        description: disposable-project end-to-end render proof
+        happy_args: --dry-run
+        body:
+        - name: out
+          type: string
+          required: false
+          positional: false
+          description: output directory for the disposable render
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 180
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+  audio:
+    description: text-to-speech and audio insertion
+    endpoints:
+      tts:
+        method: POST
+        path: /v1/tts
+        description: 'GenerateSpeech text-to-speech (needs the AI Speech Generator Extras pack; returns an error without it):
+          --text --voice ''Female 1''|''Male 1''|''Custom Voice'''
+        happy_args: --dry-run
+        body:
+        - name: text
+          type: string
+          required: true
+          positional: false
+          description: text
+        - name: voice
+          type: string
+          required: false
+          positional: false
+          description: voice
+        - name: voice-file
+          type: string
+          required: false
+          positional: false
+          description: voice file
+        - name: speed
+          type: float
+          required: false
+          positional: false
+          description: speed
+        - name: pitch
+          type: float
+          required: false
+          positional: false
+          description: pitch
+        - name: variation
+          type: float
+          required: false
+          positional: false
+          description: variation
+        - name: generation-id
+          type: int
+          required: false
+          positional: false
+          description: generation id
+        - name: filename
+          type: string
+          required: false
+          positional: false
+          description: filename
+        - name: add-to-timeline
+          type: bool
+          required: false
+          positional: false
+          description: add to timeline
+        - name: track
+          type: string
+          required: false
+          positional: false
+          description: AudioTrack number (0 = new track)
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
+      insert:
+        method: POST
+        path: /v1/insert-audio
+        description: InsertAudioToCurrentTrackAtPlayhead (Fairlight page)
+        happy_args: --dry-run
+        body:
+        - name: path
+          type: string
+          required: true
+          positional: false
+          description: path
+        - name: offset
+          type: int
+          required: false
+          positional: false
+          description: start offset in samples
+        - name: duration
+          type: int
+          required: true
+          positional: false
+          description: duration in samples
+        - name: 'yes'
+          type: bool
+          required: false
+          positional: false
+          default: true
+          description: confirm the write (the bridge refuses without it)
+        - name: timeout
+          type: int
+          required: false
+          positional: false
+          default: 25
+          description: per-call watchdog seconds (a trip stops the sidecar)
+        response:
+          type: object
