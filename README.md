@@ -28,9 +28,8 @@ a field guide to Resolve's scripting API written from live measurements.
 ## Quick start
 
 ```powershell
-# 1. Install the bridge next to Resolve (gates, SHA stamp, interpreter pin, self-verify)
-pwsh bridge/deploy.ps1 -Local -Dest 'C:/ResolveTools' `
-    -PythonPin 'C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolvePython\ResolvePython.exe'
+# 1. Install the bridge next to Resolve (gates, SHA stamp, interpreter probe, self-verify)
+pwsh bridge/deploy.ps1 -Local -Dest 'C:/ResolveTools'
 
 # 2. Talk to Resolve (Studio must be open)
 C:\ResolveTools\resolve.cmd status --json

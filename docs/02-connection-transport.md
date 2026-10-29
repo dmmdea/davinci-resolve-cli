@@ -16,10 +16,11 @@
 | any | `fuscript.exe` (Lua or `-l py3`; on 21.1 `-l py3` reports the SYSTEM Python) | — |
 
    21.1 ships `C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolvePython\ResolvePython.exe`
-   (Python 3.14.4, `import DaVinciResolveScript` with no env vars, no pip). Prefer it as the pin
-   for new deploys (`deploy.ps1 -PythonPin`). The per-machine crash class was NOT reproduced on
-   21.1 (09 §2), but machine A has not been re-measured on 21.1, so keep `_probe.py` in the deploy
-   gate and still scrub `PYTHONHOME`/`PYTHONPATH` from child envs.
+   (Python 3.14.4, `import DaVinciResolveScript` with no env vars, no pip). `deploy.ps1` probes it
+   first, then the system Pythons newest first, and records the first that passes in
+   `python-path.txt`. The per-machine crash class was NOT reproduced on 21.1 (09 §2), but machine A
+   has not been re-measured on 21.1, so the deploy keeps `_probe.py` as its selection step and
+   scrubs `PYTHONHOME`/`PYTHONPATH` from the probe's child env.
 
 4. A **project page must be open** for writes (see "page null" below).
 

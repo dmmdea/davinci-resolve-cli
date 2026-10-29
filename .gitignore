@@ -5,8 +5,7 @@ cli/dist/
 *.mcpb
 
 # Bridge deploy artifacts (created by deploy.ps1 in the target folder)
-python312/
-python-pin.txt
+python-path.txt
 build-info.json
 deployed-manifest.json
 

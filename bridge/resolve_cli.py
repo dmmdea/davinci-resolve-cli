@@ -82,6 +82,9 @@ import sys
 import tempfile
 import threading
 
+# Resolve's bundled ResolvePython is an isolated interpreter: it ignores PYTHONPATH and
+# does not put the script directory on sys.path, so do it here.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from connect import get_resolve
 # The shared primitives live in ops_common so the ops_* modules can import
 # them without a circular import; the underscore names below are the ones
