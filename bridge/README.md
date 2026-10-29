@@ -33,10 +33,12 @@ cannot be appended.
 
    Then restart Resolve. Do not hand-edit `Resolve.conf`; Resolve rewrites it on exit.
 
-2. **A Python that `fusionscript.dll` accepts.**
+2. **A Python that `fusionscript.dll` accepts.** The deploy does not assume one; it measures
+   (see Install). What the measurements showed:
    - **Resolve 21.1:** every 64-bit CPython 3.11–3.14 bound in testing. Resolve ships its own
      interpreter, `C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolvePython\ResolvePython.exe`
-     (`import DaVinciResolveScript` needs no env vars). That is the recommended pin.
+     (it updates with Resolve, and `import DaVinciResolveScript` needs no env vars). The deploy
+     tries it first.
    - **Resolve 21.0.4:** compatibility was **per-machine**. The same Resolve build accepted
      different interpreters on different machines. Results of `import DaVinciResolveScript`
      (`_probe.py`):
@@ -49,42 +51,52 @@ cannot be appended.
    | machine B | CPython 3.12.10 embeddable | crash 0xC0000005 |
    | both | `fuscript.exe` (Resolve's own host, Lua or `-l py3`) | works |
 
-   Measure with `_probe.py` on each machine after any Resolve upgrade or Python change. The pin is a
-   crash fix, not a preference. A 0xC0000005 crash is an interpreter mismatch; the free edition
-   instead answers `scriptapp("Resolve")` with `None`.
+   That per-machine result is why `_probe.py` exists and why the deploy runs it on the target
+   instead of trusting a version number. Re-deploy after any Resolve upgrade or Python change to
+   re-measure. A 0xC0000005 crash is an interpreter mismatch; the free edition instead answers
+   `scriptapp("Resolve")` with `None`.
 
 ## Install
 
 From a clone of this repository, on the Windows machine that runs Resolve:
 
 ```powershell
-pwsh bridge/deploy.ps1 -Local -Dest 'C:/ResolveTools' `
-    -PythonPin 'C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolvePython\ResolvePython.exe'
+pwsh bridge/deploy.ps1 -Local -Dest 'C:/ResolveTools'
 ```
+
+`-Python '<abs path to python.exe>'` is optional. It adds one interpreter you chose as the first
+candidate; it is still probed.
 
 Or deploy to another Windows machine over OpenSSH:
 
 ```powershell
-pwsh bridge/deploy.ps1 -Target user@editing-pc -Dest 'C:/ResolveTools' [-PythonPin '<python.exe on that machine>']
+pwsh bridge/deploy.ps1 -Target user@editing-pc -Dest 'C:/ResolveTools' [-Python '<python.exe on that machine>']
 ```
 
 The deploy is idempotent and convergent:
 
 1. It runs `py_compile` and `check_readonly.py` as gates.
 2. It SHA-stamps `build-info.json`.
-3. It sets up the interpreter. With `-PythonPin`, it writes `python-pin.txt`, which the launcher
-   prefers. Without a pin, it provisions the 3.12.10 embeddable from `python-manifest.json` if
-   absent (SHA256-verified) and always overwrites `python312\python312._pth` with the versioned copy.
-4. It removes files left by previous deploys that are no longer in the file list.
+3. It chooses the interpreter by measurement on the target. The candidates, in order: the
+   `-Python` path if given; Resolve's bundled `ResolvePython\ResolvePython.exe` (found through the
+   registry or the default Program Files path, over ssh for `-Target`); then every 64-bit CPython 3.x
+   that `py -0p` lists, newest first (2.x and 32-bit are skipped). It runs `_probe.py` under each
+   candidate in a child process with `PYTHONHOME` and `PYTHONPATH` removed, so a crash fails that
+   candidate and not the deploy, and prints one line per candidate. The first that passes is written
+   to `python-path.txt`. If none passes, the deploy fails and lists each candidate with its exit
+   code. Nothing is downloaded or provisioned.
+4. It removes files left by previous deploys that are no longer in the file list, including a stale
+   `python-pin.txt` or `python312\` folder from older deploys (the folder only if it lies inside the
+   deploy folder).
 5. It asserts that the target's `resolve.cmd --version` answers with this commit's SHA.
 
 Treat the deployed copy as a build artifact and do not hand-edit it.
 
 `resolve.cmd` resolves the interpreter in this order:
 
-1. `python-pin.txt`
-2. the bundled `python312\`
-3. a registered `py -3.12`
+1. `python-path.txt` (written by the deploy after its probe)
+2. Resolve's bundled `ResolvePython\ResolvePython.exe` at the default install path
+3. `py -3` (the newest registered CPython 3.x)
 
 You can also run the bridge straight from the clone with any compatible Python:
 `python bridge/resolve_cli.py status`.
@@ -198,5 +210,6 @@ makes it a useful health probe even when the Python tooling is broken:
 from connect import get_resolve, get_project
 ```
 
-Run them with the deployed interpreter, for example `python312\python.exe yourscript.py`. The
-versioned `._pth` puts the deploy folder on `sys.path`.
+Run them with the interpreter named in `python-path.txt`. Put the deploy folder on `sys.path`
+first, for example `sys.path.insert(0, r'C:\ResolveTools')`: Resolve's bundled interpreter ignores
+`PYTHONPATH` and does not add the script's folder.

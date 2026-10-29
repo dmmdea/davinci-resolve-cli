@@ -1,42 +1,40 @@
 @echo off
-REM resolve.cmd -- run resolve_cli with a KNOWN-WORKING interpreter.
+REM resolve.cmd -- run resolve_cli with an interpreter that was MEASURED to work.
 REM
-REM fusionscript.dll's interpreter compatibility is PER-MACHINE, not per-Resolve
-REM build: on machine A (Resolve 21.0.4.5) only CPython 3.12.x loads cleanly
-REM (3.11.9/3.14.7 crash 0xC0000005 in PyInit_fusionscript; measured 2026-08-23),
-REM while on machine B (same 21.0.4.5 build) system 3.14.7 works and the 3.12.10
-REM embeddable crashes (measured 2026-08-28). Measure with _probe.py on each
-REM machine and record the winner via deploy.ps1 -PythonPin. Resolution order:
-REM   1. python-pin.txt next to this script (first line = absolute python.exe)
-REM   2. bundled python312\python.exe (the embeddable default)
-REM   3. any registered CPython 3.12 via the py launcher
-REM Never repoint at a uv/Astral build.
+REM fusionscript.dll's interpreter compatibility can be PER-MACHINE (on some Resolve
+REM builds a wrong CPython ABI crashes with 0xC0000005 in PyInit_fusionscript), so
+REM deploy.ps1 runs _probe.py under each candidate interpreter and records the first
+REM one that passes in python-path.txt. See README.md for the measurements.
+REM Resolution order:
+REM   1. python-path.txt next to this script (first line = absolute interpreter path)
+REM   2. Resolve's own bundled ResolvePython.exe at the default install path
+REM   3. the newest registered CPython 3.x via the py launcher
+REM Never repoint at a uv/Astral build unless the probe passed it.
 
 setlocal
-set "PIN_FILE=%~dp0python-pin.txt"
-if not exist "%PIN_FILE%" goto :nopin
-set /p RESOLVE_PY=<"%PIN_FILE%"
+set "PATH_FILE=%~dp0python-path.txt"
+if not exist "%PATH_FILE%" goto :nopath
+set /p RESOLVE_PY=<"%PATH_FILE%"
 if exist "%RESOLVE_PY%" goto :run
-echo ERROR: python-pin.txt names a missing interpreter:
+echo ERROR: python-path.txt names a missing interpreter:
 echo   %RESOLVE_PY%
-echo Fix the pin (deploy.ps1 -PythonPin) or delete python-pin.txt to use the bundled default.
+echo Redeploy to re-probe (deploy.ps1, optionally -Python ^<abs path^>), or delete python-path.txt to fall back.
 exit /b 1
 
-:nopin
-set "RESOLVE_PY=%~dp0python312\python.exe"
+:nopath
+set "RESOLVE_PY=%ProgramFiles%\Blackmagic Design\DaVinci Resolve\ResolvePython\ResolvePython.exe"
 if exist "%RESOLVE_PY%" goto :run
 
-REM Fallback: any registered CPython 3.12 via the py launcher.
+REM Fallback: the newest registered CPython 3.x via the py launcher.
 REM (Kept OUTSIDE parentheses: %ERRORLEVEL% inside a parenthesized block is
 REM expanded at parse time and would report a stale exit code.)
-py -3.12 -c "import sys" >nul 2>&1
+py -3 -c "import sys" >nul 2>&1
 if errorlevel 1 (
-  echo ERROR: no pinned interpreter, no bundled python312\, no registered CPython 3.12.
-  echo Deploy with -PythonPin ^<abs path^> after measuring _probe.py on this machine,
-  echo or restore python312\ from python.org: python-3.12.10-embed-amd64.zip
+  echo ERROR: no python-path.txt, no Resolve bundled interpreter, no registered CPython 3.x.
+  echo Install a 64-bit CPython and deploy with -Python ^<abs path^>.
   exit /b 1
 )
-py -3.12 "%~dp0resolve_cli.py" %*
+py -3 "%~dp0resolve_cli.py" %*
 exit /b %ERRORLEVEL%
 
 :run

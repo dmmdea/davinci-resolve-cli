@@ -20,7 +20,7 @@ chapters carry a pointer here at each overturned claim.
 - The MCP server bundle (section 3) also ships `fusion_api.pyi` (76 KB) and `ui_api.pyi` (63 KB)
   for the Fusion and UIManager APIs — the only typed reference for those that exists anywhere.
 
-## 2. Interpreters: the per-machine CPython pin is gone on 21.1 [measured]
+## 2. Interpreters: the per-machine CPython constraint is gone on 21.1 [measured]
 21.1 ships a **built-in Python 3.14.4** at
 `C:\Program Files\Blackmagic Design\DaVinci Resolve\ResolvePython\ResolvePython.exe`
 (`python314._pth` → `lib/python314.zip`, `lib-dynload`, `lib/modules`; `import
@@ -39,9 +39,9 @@ Interpreter matrix on 21.1.0.14 (machine B), `_probe.py` against a running Studi
 
 Conclusion: on 21.1 every 64-bit CPython ≥3.11 tested binds `fusionscript.dll`; the
 0xC0000005-per-machine class of failure (02 §preconditions, 08 #3) is **not reproduced on 21.1**.
-Keep `_probe.py` in the deploy gate anyway (it is cheap, and machine A has not been re-measured on
-21.1). Preferred pin for new deploys: the bundled `ResolvePython.exe` (no env vars, upgraded with
-Resolve) or the system 3.14.
+Keep `_probe.py` as the deploy's selection step anyway (it is cheap, and machine A has not been
+re-measured on 21.1). `deploy.ps1` tries the bundled `ResolvePython.exe` first (no env vars, upgraded
+with Resolve), then the system Pythons newest first, and records the first that passes.
 
 ## 3. The native "MCP server" is a stdio zipapp, not a listener [measured]
 Nothing new listens. A GUI 21.1 Resolve owns TCP `0.0.0.0:15000` (scripting) and `0.0.0.0:49152`

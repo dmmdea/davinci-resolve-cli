@@ -9,7 +9,8 @@
 Source: `bridge/resolve_cli.py`. The deployed copy is a build artifact, so don't hand-edit it;
 `resolve.cmd --version` prints the SHA it was deployed from.
 Deploy: `pwsh bridge/deploy.ps1 -Target user@editing-pc` (remote) or
-`pwsh bridge/deploy.ps1 -Local -Dest 'C:/ResolveTools' -PythonPin '<python.exe>'` (local).
+`pwsh bridge/deploy.ps1 -Local -Dest 'C:/ResolveTools'` (local). The deploy probes the interpreters on the
+machine and records the first that works in `python-path.txt`; `-Python '<python.exe>'` adds one candidate.
 Unit tests: `python -m pytest bridge/tests -q`. `check_readonly.py` (AST gate)
 fails the deploy if a non-write command path calls a mutating API.
 
@@ -81,8 +82,9 @@ read-safety gate green, then regenerate the Go CLI from `/v1/commands` (10 §4).
 ## Writing an ad-hoc script on the Resolve machine (preferred over many CLI calls on a slow link)
 ```
 scp myjob.py user@editing-pc:C:/ResolveTools/jobs/myjob.py
-ssh user@editing-pc "C:\ResolveTools\python312\python.exe C:\ResolveTools\jobs\myjob.py"
+ssh user@editing-pc "<interpreter named in C:\ResolveTools\python-path.txt> C:\ResolveTools\jobs\myjob.py"
 ```
-`python312._pth` puts the deploy folder on `sys.path`, so `from connect import get_resolve` works.
+Start the job with `sys.path.insert(0, r'C:\ResolveTools')` so `from connect import get_resolve` works (Resolve's
+bundled interpreter ignores `PYTHONPATH` and does not add the script's folder).
 Wrap every API call in the watchdog pattern from 02; print JSON to stdout; never call `Set*`/`Add*`/`Load*`
 unless the job is explicitly a write the operator approved.

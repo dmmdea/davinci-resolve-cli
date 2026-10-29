@@ -1,14 +1,17 @@
 """_probe.py -- measure fusionscript interpreter compatibility ON THIS MACHINE.
 
-Run it under each candidate CPython against a RUNNING Resolve:
+deploy.ps1 runs it under every candidate interpreter (in a child process, with
+PYTHONHOME/PYTHONPATH removed) and records the first that passes. By hand:
 
-    "C:\\Program Files\\Python314\\python.exe" _probe.py
-    python312\\python.exe _probe.py
+    "C:\\Program Files\\Blackmagic Design\\DaVinci Resolve\\ResolvePython\\ResolvePython.exe" _probe.py
+    py -3 _probe.py
 
-Exit 0 + "scriptapp: DaVinci Resolve Studio ..." = that interpreter works here;
-a 0xC0000005 access violation in PyInit_fusionscript = it does not. The result
-is PER-MACHINE (same Resolve build, different machines, different winners --
-measured on two Windows machines, 2026-08). Record the winner via deploy.ps1 -PythonPin.
+Exit 0 and a "scriptapp:" line = that interpreter loads fusionscript here
+("scriptapp: None" only means Resolve is not running or external scripting is
+off; the import is the measurement). A 0xC0000005 access violation in
+PyInit_fusionscript = it does not. On 21.0.4 the result was PER-MACHINE (same
+Resolve build, different machines, different winners --
+measured on two Windows machines, 2026-08). deploy.ps1 -Python <abs path> adds a candidate.
 """
 import sys
 import faulthandler

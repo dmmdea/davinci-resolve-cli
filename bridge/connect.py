@@ -7,11 +7,12 @@ Usage:
 REQUIREMENTS (both are hard requirements, not preferences):
   1. DaVinci Resolve STUDIO must be RUNNING. External scripting is a Studio-only
      feature -- the free version only allows scripts from Resolve's own console.
-  2. Use CPython 3.12.x -- the bundled interpreter next to this file:
-         python312\\python.exe   (python.org 3.12.10 embeddable)
-     Measured on Resolve 21.0.4.5 (2026-08-23): 3.12.10 works; 3.11.9 and
-     3.14.7 crash 0xC0000005 in PyInit_fusionscript. uv/Astral builds are
-     also known-bad (crash reported earlier; not re-measured on this build).
+  2. Use a CPython that fusionscript.dll accepts ON THIS MACHINE. deploy.ps1
+     measures that with _probe.py (Resolve's own ResolvePython\\ResolvePython.exe
+     first, then the system Pythons) and records the winner in python-path.txt,
+     which resolve.cmd reads. On Resolve 21.0.4.5 the answer was per-machine: a
+     wrong CPython ABI crashes 0xC0000005 in PyInit_fusionscript. On 21.1 every
+     64-bit CPython 3.11-3.14 bound. See README.md.
 
 Resolve must also permit external scripting:
      Resolve > Preferences > System > General >
@@ -59,8 +60,8 @@ def get_resolve():
     except OSError as exc:
         raise RuntimeError(
             f"Failed loading {lib}: {exc}\n"
-            "This usually means the wrong interpreter -- use CPython 3.12.x "
-            "(the bundled python312\\python.exe)."
+            "This usually means the wrong interpreter -- use the one deploy.ps1 "
+            "recorded in python-path.txt (re-run deploy.ps1 to re-probe)."
         ) from exc
 
     resolve = dvr.scriptapp("Resolve")
@@ -69,7 +70,7 @@ def get_resolve():
             "Resolve is not reachable. Check, in order:\n"
             "  1. DaVinci Resolve STUDIO is running (free version cannot do this).\n"
             "  2. Preferences > System > General > 'External scripting using' = Local.\n"
-            "  3. This is CPython 3.12.x (the bundled python312\\python.exe)."
+            "  3. This is the interpreter deploy.ps1 recorded in python-path.txt."
         )
     return resolve
 
